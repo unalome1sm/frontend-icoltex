@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
+import { Sarabun } from "next/font/google";
 import "./globals.css";
+
+const sarabun = Sarabun({
+  weight: "400",
+  subsets: ["latin", "latin-ext"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Icoltex · Tienda de Telas",
@@ -13,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className="antialiased bg-background text-foreground font-sans">
+      <body className={`${sarabun.className} antialiased bg-background text-foreground`}>
         {children}
       </body>
     </html>

@@ -1,28 +1,30 @@
 import Link from "next/link";
 
+const TOP_BAR_BG = "#F5F5F5";
+
 export function TopBar() {
   return (
-    <div className="w-full bg-slate-900 text-slate-100 text-xs sm:text-sm">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2">
-        <p className="hidden sm:block">
-          Telas de alta calidad · Envíos a todo el país · Compra mínima 1 metro
-        </p>
-        <p className="sm:hidden">Telas premium · Envíos nacionales</p>
-        <div className="flex items-center gap-4">
-          <Link href="/account" className="hover:underline">
-            Mi cuenta
-          </Link>
-          <Link href="/admin" className="hover:underline">
-            Admin
-          </Link>
-          <Link href="/contact" className="hover:underline">
-            Soporte
-          </Link>
-          <span className="hidden sm:inline">+57 300 000 0000</span>
-        </div>
+    <div
+      className="w-full text-sm text-slate-700"
+      style={{ backgroundColor: TOP_BAR_BG }}
+    >
+      <div className="flex w-full items-center justify-end px-4 py-2 sm:px-6 lg:px-8">
+        <Link href="/contact" className="hover:underline">
+          Ayuda
+        </Link>
+        <span className="mx-3 text-slate-300" aria-hidden>
+          |
+        </span>
+        <Link href="/register" className="hover:underline">
+          Registrarse
+        </Link>
+        <span className="mx-3 text-slate-300" aria-hidden>
+          |
+        </span>
+        <Link href="/login" className="hover:underline">
+          Iniciar sesión
+        </Link>
       </div>
     </div>
   );
 }
-
-
