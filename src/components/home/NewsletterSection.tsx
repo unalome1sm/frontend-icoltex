@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useAuthSidebar } from "@/contexts/AuthSidebarContext";
 
 export function NewsletterSection() {
   const [email, setEmail] = useState("");
+  const { openAuth } = useAuthSidebar();
 
   return (
     <section
@@ -49,12 +51,13 @@ export function NewsletterSection() {
             className="w-full rounded border border-gray-300 bg-white px-4 py-3.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-red-600 focus:outline-none focus:ring-1 focus:ring-red-600"
             aria-label="Correo electrónico"
           />
-          <Link
-            href="/register"
+          <button
+            type="button"
+            onClick={() => openAuth("register")}
             className="inline-flex w-full items-center justify-center rounded bg-red-600 px-6 py-3.5 text-sm font-medium text-white transition hover:bg-red-700"
           >
             Inicia sesión o registrate gratis
-          </Link>
+          </button>
         </form>
       </div>
     </section>

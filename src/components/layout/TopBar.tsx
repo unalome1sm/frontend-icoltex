@@ -1,8 +1,13 @@
+"use client";
+
 import Link from "next/link";
+import { useAuthSidebar } from "@/contexts/AuthSidebarContext";
 
 const TOP_BAR_BG = "#F5F5F5";
 
 export function TopBar() {
+  const { openAuth } = useAuthSidebar();
+
   return (
     <div
       className="w-full text-sm text-slate-700"
@@ -15,15 +20,23 @@ export function TopBar() {
         <span className="mx-3 text-slate-300" aria-hidden>
           |
         </span>
-        <Link href="/register" className="hover:underline">
+        <button
+          type="button"
+          onClick={() => openAuth("register")}
+          className="hover:underline"
+        >
           Registrarse
-        </Link>
+        </button>
         <span className="mx-3 text-slate-300" aria-hidden>
           |
         </span>
-        <Link href="/login" className="hover:underline">
+        <button
+          type="button"
+          onClick={() => openAuth("login")}
+          className="hover:underline"
+        >
           Iniciar sesión
-        </Link>
+        </button>
       </div>
     </div>
   );

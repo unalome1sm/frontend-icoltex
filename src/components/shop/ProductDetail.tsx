@@ -7,6 +7,7 @@ import { ProductImageGallery } from "./ProductImageGallery";
 import { ProductAccordion } from "./ProductAccordion";
 import { ProductCard } from "./ProductCard";
 import type { ProductCardData } from "./ProductCard";
+import { useCart } from "@/contexts/CartContext";
 
 export type ProductDetailData = {
   id: string;
@@ -57,12 +58,25 @@ function colorToBg(name: string): string {
 }
 
 export function ProductDetail({ product, relatedProducts = [] }: Props) {
-  const [measure, setMeasure] = useState("metro");
+  const { addItem } = useCart();
+  const [measure, setMeasure] = useState<"metro" | "rollo" | "peso">("metro");
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const colors = parseColors(product.colores);
   const mainColor = selectedColor ?? colors[0] ?? "Azul marino";
   const images = product.imageUrls?.length ? product.imageUrls : [];
+
+  function handleAddToCart() {
+    addItem({
+      productId: product.id,
+      nombre: product.nombre,
+      imageUrl: product.imageUrls?.[0],
+      precioMetro: product.precioMetro ?? 0,
+      quantity,
+      measure,
+      color: mainColor ?? undefined,
+    });
+  }
 
   const breadcrumbSegments = [
     product.claseFamilia || "Antifluido",
@@ -145,7 +159,7 @@ export function ProductDetail({ product, relatedProducts = [] }: Props) {
                 <button
                   key={opt.id}
                   type="button"
-                  onClick={() => setMeasure(opt.id)}
+                  onClick={() => setMeasure(opt.id as "metro" | "rollo" | "peso")}
                   className={`rounded border px-4 py-2 text-sm font-medium transition ${
                     measure === opt.id
                       ? "border-red-600 bg-red-50 text-red-700"
@@ -204,6 +218,7 @@ export function ProductDetail({ product, relatedProducts = [] }: Props) {
           <div className="flex flex-col gap-2 sm:flex-row">
             <button
               type="button"
+              onClick={handleAddToCart}
               className="rounded bg-red-600 px-6 py-3 text-sm font-medium text-white transition hover:bg-red-700"
             >
               Agregar al carrito

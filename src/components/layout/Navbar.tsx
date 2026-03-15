@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { Search, ShoppingCart } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
 
 const NAV_LINKS = [
   { label: "Antifluidos", href: "/shop?category=antifluidos" },
@@ -10,6 +13,8 @@ const NAV_LINKS = [
 ];
 
 export function Navbar() {
+  const { openCart, itemCount } = useCart();
+
   return (
     <header className="w-full border-b border-slate-200 bg-white">
       <div className="flex w-full items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
@@ -46,13 +51,19 @@ export function Navbar() {
               aria-label="Buscar productos"
             />
           </div>
-          <Link
-            href="/checkout"
-            className="flex h-9 w-9 shrink-0 items-center justify-center text-slate-700 transition-colors hover:text-slate-900"
+          <button
+            type="button"
+            onClick={openCart}
+            className="relative flex h-9 w-9 shrink-0 items-center justify-center text-slate-700 transition-colors hover:text-slate-900"
             aria-label="Carrito de compras"
           >
             <ShoppingCart className="h-5 w-5" />
-          </Link>
+            {itemCount > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-medium text-white">
+                {itemCount > 99 ? "99+" : itemCount}
+              </span>
+            )}
+          </button>
         </div>
       </div>
     </header>
