@@ -1,33 +1,65 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { apiFetch } from '@/lib/api';
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ArrowRight } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 
-type Step = 'credentials' | 'otp';
+type Step = "credentials" | "otp";
+
+function GoogleIcon() {
+  return (
+    <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden>
+      <path
+        fill="#4285F4"
+        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+      />
+    </svg>
+  );
+}
+
+function AppleIcon() {
+  return (
+    <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
+    </svg>
+  );
+}
 
 export default function LoginPage() {
   const router = useRouter();
-  const [step, setStep] = useState<Step>('credentials');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [code, setCode] = useState('');
+  const [step, setStep] = useState<Step>("credentials");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   async function handleRequest(e: React.FormEvent) {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
     try {
-      await apiFetch('/api/auth/login/request', {
-        method: 'POST',
+      await apiFetch("/api/auth/login/request", {
+        method: "POST",
         body: { email, password },
       });
-      setStep('otp');
+      setStep("otp");
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Error al enviar código');
+      setError(err instanceof Error ? err.message : "Error al enviar código");
     } finally {
       setLoading(false);
     }
@@ -35,100 +67,166 @@ export default function LoginPage() {
 
   async function handleVerify(e: React.FormEvent) {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
     try {
       const data = await apiFetch<{ user: { id: string; email: string }; token?: string }>(
-        '/api/auth/login/verify',
-        { method: 'POST', body: { email, code } }
+        "/api/auth/login/verify",
+        { method: "POST", body: { email, code } }
       );
       if (data.token) {
-        localStorage.setItem('icoltex_token', data.token);
+        localStorage.setItem("icoltex_token", data.token);
       }
-      router.push('/account');
+      router.push("/account");
       router.refresh();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Código incorrecto o expirado');
+      setError(err instanceof Error ? err.message : "Código incorrecto o expirado");
     } finally {
       setLoading(false);
     }
   }
 
-  return (
-    <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h1 className="mb-6 text-xl font-semibold text-slate-900">Iniciar sesión</h1>
-
-      {step === 'credentials' ? (
-        <form onSubmit={handleRequest} className="space-y-4">
-          <div>
-            <label className="mb-1 block text-sm text-slate-600">Correo</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-slate-600">Contraseña</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            />
-          </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
-          >
-            {loading ? 'Enviando...' : 'Enviar código al correo'}
-          </button>
-        </form>
-      ) : (
-        <form onSubmit={handleVerify} className="space-y-4">
-          <p className="text-sm text-slate-600">
-            Revisa tu correo. Ingresa el código de 6 dígitos.
+  if (step === "otp") {
+    return (
+      <div className="w-full max-w-sm">
+        <div className="mb-8 flex justify-center">
+          <span className="font-serif text-5xl font-semibold text-red-600" aria-hidden>X</span>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="mb-4 text-lg font-semibold text-slate-900">Verifica tu correo</h2>
+          <p className="mb-4 text-sm text-slate-600">
+            Revisa tu correo e ingresa el código de 6 dígitos.
           </p>
-          <div>
-            <label className="mb-1 block text-sm text-slate-600">Código</label>
+          <form onSubmit={handleVerify} className="space-y-4">
             <input
               type="text"
               inputMode="numeric"
               pattern="[0-9]{6}"
               maxLength={6}
               value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
               required
               placeholder="000000"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-center text-lg tracking-[0.5em]"
+              className="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-center text-lg tracking-[0.5em] text-slate-900 placeholder:text-slate-500 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
             />
-          </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
-          >
-            {loading ? 'Verificando...' : 'Verificar y entrar'}
-          </button>
-          <button
-            type="button"
-            onClick={() => setStep('credentials')}
-            className="w-full text-sm text-slate-500 hover:text-slate-700"
-          >
-            Volver
-          </button>
-        </form>
-      )}
+            {error && (
+              <div className="space-y-1">
+                <p className="text-sm text-red-600">{error}</p>
+                {error.toLowerCase().includes("administrador") && (
+                  <p className="text-sm">
+                    <Link href="/admin/login" className="font-medium text-slate-900 underline hover:no-underline">
+                      Acceso para administradores →
+                    </Link>
+                  </p>
+                )}
+              </div>
+            )}
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-red-700 disabled:opacity-50"
+            >
+              {loading ? "Verificando..." : "Verificar y entrar"}
+              <ArrowRight className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setStep("credentials")}
+              className="w-full text-sm text-slate-500 hover:text-slate-700"
+            >
+              Volver
+            </button>
+          </form>
+        </div>
+        <p className="mt-6 text-center text-sm text-slate-500">
+          ¿No tienes cuenta?{" "}
+          <Link href="/register" className="font-medium text-slate-900 underline hover:underline">
+            Regístrate
+          </Link>
+        </p>
+      </div>
+    );
+  }
 
-      <p className="mt-6 text-center text-sm text-slate-500">
-        ¿No tienes cuenta?{' '}
-        <Link href="/register" className="font-medium text-slate-900 hover:underline">
+  return (
+    <div className="w-full max-w-sm">
+      {/* Logo */}
+      <div className="mb-8 flex justify-center">
+        <Link href="/" className="font-serif text-5xl font-semibold text-red-600" aria-label="Icoltex">
+          X
+        </Link>
+      </div>
+
+      {/* Formulario */}
+      <form onSubmit={handleRequest} className="space-y-4">
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          placeholder="Correo electrónico"
+          className="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+        />
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          placeholder="Contraseña"
+          className="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+        />
+        {error && (
+          <div className="space-y-1">
+            <p className="text-sm text-red-600">{error}</p>
+            {error.toLowerCase().includes("administrador") && (
+              <p className="text-sm">
+                <Link href="/admin/login" className="font-medium text-slate-900 underline hover:no-underline">
+                  Acceso para administradores →
+                </Link>
+              </p>
+            )}
+          </div>
+        )}
+        <button
+          type="submit"
+          disabled={loading}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-red-700 disabled:opacity-50"
+        >
+          {loading ? "Enviando..." : "Continuar"}
+          <ArrowRight className="h-4 w-4" />
+        </button>
+      </form>
+
+      {/* Separador O */}
+      <div className="my-6 flex items-center gap-3">
+        <span className="h-px flex-1 bg-slate-300" />
+        <span className="text-sm font-medium text-slate-700">O</span>
+        <span className="h-px flex-1 bg-slate-300" />
+      </div>
+
+      {/* Iniciar con Google */}
+      <button
+        type="button"
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-red-700"
+        onClick={() => {}}
+      >
+        Iniciar con Google
+        <GoogleIcon />
+      </button>
+
+      {/* Iniciar con Apple */}
+      <button
+        type="button"
+        className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-red-700"
+        onClick={() => {}}
+      >
+        Iniciar con Apple
+        <AppleIcon />
+      </button>
+
+      <p className="mt-8 text-center text-sm text-slate-500">
+        ¿No tienes cuenta?{" "}
+        <Link href="/register" className="font-medium text-slate-900 underline hover:underline">
           Regístrate
         </Link>
       </p>
