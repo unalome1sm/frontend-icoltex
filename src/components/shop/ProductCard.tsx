@@ -30,7 +30,7 @@ export function ProductCard({ product, variant = "default" }: Props) {
       href={`/shop/${product.id}`}
       className="group flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-md"
     >
-      <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-100">
+      <div className="relative aspect-square w-full overflow-hidden bg-slate-100">
         {imageUrl ? (
           <Image
             src={imageUrl}

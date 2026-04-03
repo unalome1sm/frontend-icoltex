@@ -260,17 +260,34 @@ export function ProductDetail({ product, relatedProducts = [] }: Props) {
         </div>
       </div>
 
-      {/* Productos relacionados: siempre visible; 4 por fila, etiqueta debajo de la imagen */}
+      {/* Productos relacionados: carrusel en mobile y grid en pantallas grandes */}
       <section className="mb-12 border-t border-slate-200 pt-8">
         <h2 className="mb-6 text-xl font-bold text-slate-900">
           Productos relacionados con este artículo
         </h2>
         {relatedProducts.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {relatedProducts.map((p) => (
-              <ProductCard key={p.id} product={{ ...p, isNew: true }} variant="related" />
-            ))}
-          </div>
+          <>
+            {/* Carrusel solo en mobile */}
+            <div className="sm:hidden -mx-2 overflow-x-auto overscroll-x-contain px-5 pb-2 snap-x snap-mandatory">
+              <div className="flex gap-[10px]">
+                {relatedProducts.map((p) => (
+                  <div
+                    key={p.id}
+                    className="w-[75vw] max-w-[320px] flex-shrink-0 snap-start"
+                  >
+                    <ProductCard product={{ ...p, isNew: true }} variant="related" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Grid desde sm en adelante */}
+            <div className="hidden sm:grid grid-cols-2 gap-6 lg:grid-cols-4">
+              {relatedProducts.map((p) => (
+                <ProductCard key={p.id} product={{ ...p, isNew: true }} variant="related" />
+              ))}
+            </div>
+          </>
         ) : (
           <p className="py-6 text-center text-slate-500">
             No hay otros productos para mostrar por ahora.

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { getApiUrl } from "@/lib/api";
 import { toProductCardData, type ProductResponse } from "@/lib/products";
-import { ProductGrid } from "@/components/shop";
+import { ProductGrid, ProductCard } from "@/components/shop";
 import type { ProductCardData } from "@/components/shop";
 
 const FALLBACK: ProductCardData[] = [
@@ -24,10 +24,22 @@ export function DestacadosSection() {
       .then((data: { products?: ProductResponse[]; error?: string }) => {
         if (data.error) throw new Error(data.error);
         const list = data.products ?? [];
-        setProducts(list.length > 0 ? list.map(toProductCardData) : FALLBACK);
+        const listForUI = list.length > 0 ? list.map(toProductCardData) : FALLBACK;
+        setProducts(listForUI);
       })
       .catch(() => setProducts(FALLBACK))
       .finally(() => setLoading(false));
+
+    // Petición extra para ver TODOS los productos en consola (análisis)
+    fetch(getApiUrl("/api/products?page=1&limit=2000"))
+      .then((res) => res.json())
+      .then((data: { products?: ProductResponse[]; error?: string }) => {
+        const todos = data.products ?? [];
+        console.log("[Destacados] Todos los productos (crudos), total:", todos.length, todos);
+        const transformados = todos.map(toProductCardData);
+        console.log("[Destacados] Todos los productos (transformados), total:", transformados.length, transformados);
+      })
+      .catch(() => {});
   }, []);
 
   return (
@@ -47,7 +59,26 @@ export function DestacadosSection() {
       {loading ? (
         <p className="py-8 text-center text-slate-500">Cargando destacados...</p>
       ) : (
-        <ProductGrid products={products} />
+        <>
+          {/* Carrusel solo en mobile: scroll horizontal con snap */}
+          <div className="sm:hidden -mx-2 overflow-x-auto overscroll-x-contain px-5 pb-2 snap-x snap-mandatory">
+            <div className="flex gap-[10px]">
+              {products.map((product) => (
+                <div
+                  key={product.id}
+                  className="w-[75vw] max-w-[320px] flex-shrink-0 snap-start"
+                >
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Grid desde sm en adelante */}
+          <div className="hidden sm:block">
+            <ProductGrid products={products} />
+          </div>
+        </>
       )}
     </section>
   );

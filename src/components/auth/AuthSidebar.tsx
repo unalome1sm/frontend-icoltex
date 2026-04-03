@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type FormEvent, type ReactElement } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { X, ArrowRight } from "lucide-react";
@@ -75,7 +75,7 @@ export function AuthSidebar() {
   };
 
   // —— Login ——
-  async function handleLoginRequest(e: React.FormEvent) {
+  async function handleLoginRequest(e: FormEvent) {
     e.preventDefault();
     setLoginError("");
     setLoginLoading(true);
@@ -89,7 +89,7 @@ export function AuthSidebar() {
     }
   }
 
-  async function handleLoginVerify(e: React.FormEvent) {
+  async function handleLoginVerify(e: FormEvent) {
     e.preventDefault();
     setLoginError("");
     setLoginLoading(true);
@@ -108,7 +108,7 @@ export function AuthSidebar() {
   }
 
   // —— Register ——
-  async function handleRegEmailSubmit(e: React.FormEvent) {
+  async function handleRegEmailSubmit(e: FormEvent) {
     e.preventDefault();
     setRegError("");
     setRegLoading(true);
@@ -122,7 +122,7 @@ export function AuthSidebar() {
     }
   }
 
-  function handleRegOtpNext(e: React.FormEvent) {
+  function handleRegOtpNext(e: FormEvent) {
     e.preventDefault();
     setRegError("");
     if (!regCode || regCode.length !== 6) {
@@ -132,7 +132,7 @@ export function AuthSidebar() {
     setRegStep("password");
   }
 
-  async function handleRegPasswordSubmit(e: React.FormEvent) {
+  async function handleRegPasswordSubmit(e: FormEvent) {
     e.preventDefault();
     setRegError("");
     if (regPassword !== regConfirmPassword) {
@@ -280,14 +280,14 @@ function LoginContent({
   setCode: (v: string) => void;
   loading: boolean;
   error: string;
-  onRequest: (e: React.FormEvent) => void;
-  onVerify: (e: React.FormEvent) => void;
+  onRequest: (e: FormEvent) => void;
+  onVerify: (e: FormEvent) => void;
   onBackToCredentials: () => void;
   onSwitchToRegister: () => void;
   inputClass: string;
   btnPrimaryClass: string;
-  GoogleIcon: () => JSX.Element;
-  AppleIcon: () => JSX.Element;
+  GoogleIcon: () => ReactElement;
+  AppleIcon: () => ReactElement;
 }) {
   if (step === "otp") {
     return (
@@ -426,16 +426,16 @@ function RegisterContent({
   setConfirmPassword: (v: string) => void;
   loading: boolean;
   error: string;
-  onEmailSubmit: (e: React.FormEvent) => void;
-  onOtpNext: (e: React.FormEvent) => void;
-  onPasswordSubmit: (e: React.FormEvent) => void;
+  onEmailSubmit: (e: FormEvent) => void;
+  onOtpNext: (e: FormEvent) => void;
+  onPasswordSubmit: (e: FormEvent) => void;
   onBackToEmail: () => void;
   onBackToOtp: () => void;
   onSwitchToLogin: () => void;
   inputClass: string;
   btnPrimaryClass: string;
-  GoogleIcon: () => JSX.Element;
-  AppleIcon: () => JSX.Element;
+  GoogleIcon: () => ReactElement;
+  AppleIcon: () => ReactElement;
 }) {
   if (step === "otp") {
     return (

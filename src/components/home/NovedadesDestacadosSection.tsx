@@ -58,10 +58,35 @@ export function NovedadesDestacadosSection() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 pt-6 sm:gap-6 md:grid-cols-4 lg:grid-cols-5">
+      {/* Carrusel solo en mobile */}
+      <div className="sm:hidden -mx-2 overflow-x-auto overscroll-x-contain px-5 pt-6 pb-2 snap-x snap-mandatory">
+        <div className="flex gap-[10px]">
+          {ITEMS.map((item) => (
+            <Link
+              key={item.id}
+              href={item.href}
+              className="flex w-[75vw] max-w-[320px] flex-shrink-0 snap-start flex-col"
+            >
+              <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-slate-200">
+                <span className="absolute bottom-3 left-3 rounded bg-red-600 px-2.5 py-1 text-xs font-medium text-white">
+                  Lo más nuevo
+                </span>
+              </div>
+              <div className="mt-4 space-y-0.5">
+                <p className="text-base font-semibold text-slate-900">{item.name}</p>
+                <p className="text-sm text-slate-600">{item.description}</p>
+                <p className="text-sm font-medium text-slate-900">{item.price}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Grid desde sm */}
+      <div className="hidden pt-6 sm:grid grid-cols-2 gap-[10px] md:grid-cols-4 lg:grid-cols-5">
         {ITEMS.map((item) => (
           <Link key={item.id} href={item.href} className="flex flex-col">
-            <div className="relative aspect-[3/4] w-full min-h-[200px] overflow-hidden rounded-lg bg-slate-200 md:min-h-[260px]">
+            <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-slate-200">
               <span className="absolute bottom-3 left-3 rounded bg-red-600 px-2.5 py-1 text-xs font-medium text-white">
                 Lo más nuevo
               </span>

@@ -35,10 +35,10 @@ const ACERCA_LINKS = [
 ];
 
 const PUNTOS_LINKS = [
-  { label: "Bogotá", href: "/puntos-venta?ciudad=bogota" },
-  { label: "Medellín", href: "/puntos-venta?ciudad=medellin" },
-  { label: "Barranquilla", href: "/puntos-venta?ciudad=barranquilla" },
-  { label: "Ciudad", href: "/puntos-venta" },
+  { label: "Bogotá", href: "/stores?ciudad=bogota" },
+  { label: "Medellín", href: "/stores?ciudad=medellin" },
+  { label: "Barranquilla", href: "/stores?ciudad=barranquilla" },
+  { label: "Ciudad", href: "/stores" },
 ];
 
 const SOCIAL_LINKS = [

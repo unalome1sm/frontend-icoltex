@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { SlidersHorizontal, X } from "lucide-react";
 import { getApiUrl } from "@/lib/api";
 import { BannerCarousel } from "@/components/home/BannerCarousel";
 import { ShopFilters, ProductGrid, ShopSortBar } from "@/components/shop";
@@ -58,6 +59,7 @@ export default function ShopPage() {
   const [products, setProducts] = useState<ProductCardData[]>(FALLBACK_PRODUCTS);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -77,7 +79,8 @@ export default function ShopPage() {
       }) => {
         if (data.error) throw new Error(data.error);
         const list = data.products ?? [];
-        setProducts(list.length > 0 ? list.map(toCardData) : FALLBACK_PRODUCTS);
+        const listForUI = list.length > 0 ? list.map(toCardData) : FALLBACK_PRODUCTS;
+        setProducts(listForUI);
         if (data.pagination) {
           setPagination({
             page: data.pagination.page,
@@ -101,12 +104,26 @@ export default function ShopPage() {
         <BannerCarousel />
       </section>
 
-      {/* Dos columnas: filtros (izq) + listado (der) */}
+      {/* Dos columnas en desktop: filtros (izq) + listado (der).
+          En mobile, los filtros se abren como sidebar desde un botón. */}
       <div className="flex w-full flex-col lg:flex-row">
-        <ShopFilters />
+        <div className="hidden lg:block">
+          <ShopFilters />
+        </div>
         <main className="min-w-0 flex-1 border-slate-200 bg-white p-4 lg:p-6">
           <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-xl font-semibold text-slate-900">Destacados</h2>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-xl font-semibold text-slate-900">Destacados</h2>
+              {/* Botón para abrir filtros en mobile */}
+              <button
+                type="button"
+                onClick={() => setFiltersOpen(true)}
+                className="inline-flex items-center gap-2 rounded border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 sm:hidden"
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                <span>Filtros</span>
+              </button>
+            </div>
             <ShopSortBar value={sort} onChange={setSort} />
           </div>
           {loading ? (
@@ -144,6 +161,33 @@ export default function ShopPage() {
           )}
         </main>
       </div>
+
+      {/* Sidebar de filtros en mobile */}
+      {filtersOpen && (
+        <div className="fixed inset-0 z-40 flex lg:hidden">
+          {/* Fondo oscuro para cerrar al hacer clic */}
+          <button
+            type="button"
+            className="flex-1 bg-black/40"
+            onClick={() => setFiltersOpen(false)}
+            aria-label="Cerrar filtros"
+          />
+          {/* Panel lateral derecho */}
+          <div className="relative h-full w-80 max-w-[80vw] bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+              <button
+                type="button"
+                onClick={() => setFiltersOpen(false)}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"
+                aria-label="Cerrar filtros"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <ShopFilters />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
