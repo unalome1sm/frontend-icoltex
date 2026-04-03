@@ -1,9 +1,22 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+function backendBase(): string {
+  return (
+    process.env.API_URL ||
+    process.env.BACKEND_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    'http://127.0.0.1:3001'
+  ).replace(/\/$/, '');
+}
 
+/**
+ * Browser: same-origin `/api/...` (proxied via next.config rewrites → backend).
+ * Server: direct URL to the backend (works during `next build` without a running Next server).
+ */
 export function getApiUrl(path: string): string {
-  const base = API_URL.replace(/\/$/, '');
   const segment = path.startsWith('/') ? path : `/${path}`;
-  return `${base}${segment}`;
+  if (typeof window !== 'undefined') {
+    return segment;
+  }
+  return `${backendBase()}${segment}`;
 }
 
 export function getAuthHeaders(): HeadersInit {
