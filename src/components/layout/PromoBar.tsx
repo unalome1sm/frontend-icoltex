@@ -7,12 +7,20 @@ import { useState, useEffect } from "react";
 const PROMO_BAR_BG = "#E5DFDF";
 const ROTATE_INTERVAL_MS = 5000;
 
-const PROMOS = [
+type PromoLink = { label: string; href: string };
+
+const PROMOS: {
+  id: number;
+  icon: typeof Percent;
+  text: string;
+  link: PromoLink | null;
+}[] = [
   {
     id: 1,
     icon: Percent,
     text: "Envíos gratis por compras superiores a $$$",
-    link: { label: "Términos y condiciones", href: "/terminos-y-condiciones" },
+    // /terminos-y-condiciones — página pendiente
+    link: null,
   },
   {
     id: 2,
@@ -65,12 +73,14 @@ export function PromoBar() {
               </span>
               <span>{current.text}</span>
             </span>
-            <Link
-              href={current.link.href}
-              className="text-sm text-slate-700 leading-none border-b border-slate-700 hover:border-slate-900 hover:text-slate-900 transition-colors"
-            >
-              {current.link.label}
-            </Link>
+            {current.link ? (
+              <Link
+                href={current.link.href}
+                className="text-sm text-slate-700 leading-none border-b border-slate-700 hover:border-slate-900 hover:text-slate-900 transition-colors"
+              >
+                {current.link.label}
+              </Link>
+            ) : null}
           </div>
         </div>
       </div>

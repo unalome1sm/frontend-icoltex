@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useAuthSidebar } from "@/contexts/AuthSidebarContext";
 
 export function NewsletterSection() {
@@ -24,19 +23,9 @@ export function NewsletterSection() {
         <p className="text-xs leading-relaxed text-gray-500">
           Al hacer clic en &quot;registrarte&quot;, aceptas recibir correos
           electrónicos de Icoltex y aceptas nuestros{" "}
-          <Link
-            href="/terminos-y-condiciones"
-            className="underline underline-offset-2 hover:text-gray-700"
-          >
-            Términos de Uso
-          </Link>{" "}
-          y{" "}
-          <Link
-            href="/privacidad"
-            className="underline underline-offset-2 hover:text-gray-700"
-          >
-            Política de Privacidad
-          </Link>
+          <span className="text-gray-600">Términos de Uso</span> y{" "}
+          <span className="text-gray-600">Política de Privacidad</span>
+          {/* Enlaces pendientes: /terminos-y-condiciones, /privacidad */}
           .
         </p>
         <form

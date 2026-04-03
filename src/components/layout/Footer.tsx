@@ -12,26 +12,26 @@ import {
 const RECURSOS_LINKS = [
   { label: "Buscar tienda", href: "/stores" },
   { label: "Regístrate para recibir correos", href: "/" },
-  { label: "Eventos Icoltex", href: "/eventos" },
+  // { label: "Eventos Icoltex", href: "/eventos" },
   { label: "Blog", href: "/blog" },
 ];
 
 const AYUDA_LINKS = [
-  { label: "Obtener ayuda", href: "/ayuda" },
-  { label: "Preguntas frecuentes", href: "/faq" },
-  { label: "Estado de pedido", href: "/account/orders" },
-  { label: "Envío y entrega", href: "/envio" },
-  { label: "Devoluciones", href: "/devoluciones" },
-  { label: "Opciones de pago", href: "/pago" },
+  // { label: "Obtener ayuda", href: "/ayuda" },
+  // { label: "Preguntas frecuentes", href: "/faq" },
+  // { label: "Estado de pedido", href: "/account/orders" },
+  // { label: "Envío y entrega", href: "/envio" },
+  // { label: "Devoluciones", href: "/devoluciones" },
+  // { label: "Opciones de pago", href: "/pago" },
   { label: "Comunícate con nosotros", href: "/contact" },
 ];
 
 const ACERCA_LINKS = [
   { label: "Acerca de Icoltex", href: "/about" },
-  { label: "Noticias", href: "/noticias" },
-  { label: "Inversionistas", href: "/inversionistas" },
-  { label: "Propósito", href: "/proposito" },
-  { label: "Sostenibilidad", href: "/sostenibilidad" },
+  // { label: "Noticias", href: "/noticias" },
+  // { label: "Inversionistas", href: "/inversionistas" },
+  // { label: "Propósito", href: "/proposito" },
+  // { label: "Sostenibilidad", href: "/sostenibilidad" },
 ];
 
 const PUNTOS_LINKS = [
