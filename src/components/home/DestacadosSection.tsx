@@ -11,21 +11,56 @@ const FALLBACK: ProductCardData[] = [
   { id: "f2", nombre: "Nombre ítem", descripcion: "Descripción ítem", colores: "A,B", precioMetro: 32000 },
   { id: "f3", nombre: "Nombre ítem", descripcion: "Descripción ítem", colores: "A,B,C,D", precioMetro: 18000, isNew: true },
   { id: "f4", nombre: "Nombre ítem", descripcion: "Descripción ítem", colores: "A,B,C", precioMetro: 41000 },
+  { id: "f5", nombre: "Nombre ítem", descripcion: "Descripción ítem", colores: "A,B", precioMetro: 29500 },
+  { id: "f6", nombre: "Nombre ítem", descripcion: "Descripción ítem", colores: "A,B,C", precioMetro: 33800, isNew: true },
+  { id: "f7", nombre: "Nombre ítem", descripcion: "Descripción ítem", colores: "A", precioMetro: 19900 },
+  { id: "f8", nombre: "Nombre ítem", descripcion: "Descripción ítem", colores: "A,B,C,D,E", precioMetro: 45200 },
 ];
+
+const DESTACADOS_LIMIT = 8;
+
+async function fetchDestacadosRows(): Promise<ProductCardData[]> {
+  const first = await fetchGroupedProductsPage({ page: 1, limit: DESTACADOS_LIMIT });
+  let rows = [...(first.groups ?? [])];
+  if (rows.length === 0) return FALLBACK;
+
+  const canFetchMore =
+    rows.length < DESTACADOS_LIMIT && (first.pagination?.totalPages ?? 0) > 1;
+  if (canFetchMore) {
+    const need = DESTACADOS_LIMIT - rows.length;
+    const second = await fetchGroupedProductsPage({ page: 2, limit: need });
+    const more = second.groups ?? [];
+    const seen = new Set(rows.map((r) => r.groupId));
+    for (const r of more) {
+      if (rows.length >= DESTACADOS_LIMIT) break;
+      if (seen.has(r.groupId)) continue;
+      seen.add(r.groupId);
+      rows.push(r);
+    }
+  }
+
+  return rows.slice(0, DESTACADOS_LIMIT).map(groupedRowToCardData);
+}
 
 export function DestacadosSection() {
   const [products, setProducts] = useState<ProductCardData[]>(FALLBACK);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchGroupedProductsPage({ page: 1, limit: 8 })
-      .then((data) => {
-        const list = data.groups ?? [];
-        const listForUI = list.length > 0 ? list.map(groupedRowToCardData) : FALLBACK;
-        setProducts(listForUI);
-      })
-      .catch(() => setProducts(FALLBACK))
-      .finally(() => setLoading(false));
+    let cancelled = false;
+    (async () => {
+      try {
+        const listForUI = await fetchDestacadosRows();
+        if (!cancelled) setProducts(listForUI);
+      } catch {
+        if (!cancelled) setProducts(FALLBACK);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
