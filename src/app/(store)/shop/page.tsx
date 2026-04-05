@@ -2,50 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { SlidersHorizontal, X } from "lucide-react";
-import { getApiUrl } from "@/lib/api";
 import { BannerCarousel } from "@/components/home/BannerCarousel";
 import { ShopFilters, ProductGrid, ShopSortBar } from "@/components/shop";
 import type { ProductCardData } from "@/components/shop";
-
-function toDirectImageUrl(url: string): string {
-  const t = url.trim();
-  if (!t) return "";
-  if (/drive\.google\.com\/uc\?export=view&id=/.test(t)) return t;
-  const file = t.match(/drive\.google\.com\/file\/d\/([^/]+)/);
-  if (file) return `https://drive.google.com/uc?export=view&id=${file[1]}`;
-  const open = t.match(/drive\.google\.com\/open\?id=([^&]+)/);
-  if (open) return `https://drive.google.com/uc?export=view&id=${open[1]}`;
-  return t;
-}
-
-function getImageDisplayUrl(directUrl: string): string {
-  if (!directUrl) return "";
-  if (directUrl.includes("drive.google.com") || directUrl.includes("lh3.googleusercontent.com")) {
-    return getApiUrl(`/api/images/proxy?url=${encodeURIComponent(directUrl)}`);
-  }
-  return directUrl;
-}
-
-type ProductResponse = {
-  _id: string;
-  nombre: string;
-  caracteristica?: string;
-  precioMetro?: number;
-  colores?: string;
-  imageUrls?: string[];
-};
-
-function toCardData(p: ProductResponse): ProductCardData {
-  const imageUrls = (p.imageUrls ?? []).map((u) => getImageDisplayUrl(toDirectImageUrl(u))).filter(Boolean);
-  return {
-    id: p._id,
-    nombre: p.nombre,
-    descripcion: p.caracteristica,
-    precioMetro: p.precioMetro,
-    colores: p.colores,
-    imageUrls: imageUrls.length ? imageUrls : undefined,
-  };
-}
+import { fetchGroupedProductsPage, groupedRowToCardData } from "@/lib/groupedCatalog";
 
 const FALLBACK_PRODUCTS: ProductCardData[] = [
   { id: "fallback-1", nombre: "Nombre ítem", descripcion: "Descripción ítem", colores: "A,B,C,D,E", precioMetro: 25000, isNew: true },
@@ -69,17 +29,10 @@ export default function ShopPage() {
 
   useEffect(() => {
     setLoading(true);
-    const params = new URLSearchParams({ page: String(page), limit: "10" });
-    fetch(getApiUrl(`/api/products?${params}`))
-      .then((res) => res.json())
-      .then((data: {
-        products?: ProductResponse[];
-        pagination?: { page: number; limit: number; total: number; totalPages: number };
-        error?: string;
-      }) => {
-        if (data.error) throw new Error(data.error);
-        const list = data.products ?? [];
-        const listForUI = list.length > 0 ? list.map(toCardData) : FALLBACK_PRODUCTS;
+    fetchGroupedProductsPage({ page, limit: 10 })
+      .then((data) => {
+        const list = data.groups ?? [];
+        const listForUI = list.length > 0 ? list.map(groupedRowToCardData) : FALLBACK_PRODUCTS;
         setProducts(listForUI);
         if (data.pagination) {
           setPagination({
@@ -96,7 +49,6 @@ export default function ShopPage() {
 
   return (
     <div className="space-y-0">
-      {/* Mismo banner que la home, ancho completo */}
       <section
         className="-mt-8 w-screen max-w-none"
         style={{ marginLeft: "calc(50% - 50vw)", marginRight: "calc(50% - 50vw)" }}
@@ -104,8 +56,6 @@ export default function ShopPage() {
         <BannerCarousel />
       </section>
 
-      {/* Dos columnas en desktop: filtros (izq) + listado (der).
-          En mobile, los filtros se abren como sidebar desde un botón. */}
       <div className="flex w-full flex-col lg:flex-row">
         <div className="hidden lg:block">
           <ShopFilters />
@@ -114,7 +64,6 @@ export default function ShopPage() {
           <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-xl font-semibold text-slate-900">Destacados</h2>
-              {/* Botón para abrir filtros en mobile */}
               <button
                 type="button"
                 onClick={() => setFiltersOpen(true)}
@@ -162,17 +111,14 @@ export default function ShopPage() {
         </main>
       </div>
 
-      {/* Sidebar de filtros en mobile */}
       {filtersOpen && (
         <div className="fixed inset-0 z-40 flex lg:hidden">
-          {/* Fondo oscuro para cerrar al hacer clic */}
           <button
             type="button"
             className="flex-1 bg-black/40"
             onClick={() => setFiltersOpen(false)}
             aria-label="Cerrar filtros"
           />
-          {/* Panel lateral derecho */}
           <div className="relative h-full w-80 max-w-[80vw] bg-white shadow-xl">
             <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
               <button

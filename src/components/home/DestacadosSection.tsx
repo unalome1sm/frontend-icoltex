@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { getApiUrl } from "@/lib/api";
-import { toProductCardData, type ProductResponse } from "@/lib/products";
 import { ProductGrid, ProductCard } from "@/components/shop";
 import type { ProductCardData } from "@/components/shop";
+import { fetchGroupedProductsPage, groupedRowToCardData } from "@/lib/groupedCatalog";
 
 const FALLBACK: ProductCardData[] = [
   { id: "f1", nombre: "Nombre ítem", descripcion: "Descripción ítem", colores: "A,B,C", precioMetro: 25000, isNew: true },
@@ -19,27 +18,14 @@ export function DestacadosSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(getApiUrl("/api/products?limit=8"))
-      .then((res) => res.json())
-      .then((data: { products?: ProductResponse[]; error?: string }) => {
-        if (data.error) throw new Error(data.error);
-        const list = data.products ?? [];
-        const listForUI = list.length > 0 ? list.map(toProductCardData) : FALLBACK;
+    fetchGroupedProductsPage({ page: 1, limit: 8 })
+      .then((data) => {
+        const list = data.groups ?? [];
+        const listForUI = list.length > 0 ? list.map(groupedRowToCardData) : FALLBACK;
         setProducts(listForUI);
       })
       .catch(() => setProducts(FALLBACK))
       .finally(() => setLoading(false));
-
-    // Petición extra para ver TODOS los productos en consola (análisis)
-    fetch(getApiUrl("/api/products?page=1&limit=2000"))
-      .then((res) => res.json())
-      .then((data: { products?: ProductResponse[]; error?: string }) => {
-        const todos = data.products ?? [];
-        console.log("[Destacados] Todos los productos (crudos), total:", todos.length, todos);
-        const transformados = todos.map(toProductCardData);
-        console.log("[Destacados] Todos los productos (transformados), total:", transformados.length, transformados);
-      })
-      .catch(() => {});
   }, []);
 
   return (

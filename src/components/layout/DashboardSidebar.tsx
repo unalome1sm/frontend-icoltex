@@ -2,11 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Package, RefreshCw, Users, Shield, Store, LogOut, Images } from 'lucide-react';
+import { LayoutDashboard, Package, RefreshCw, Users, Shield, Store, LogOut, Images, Table2, Palette } from 'lucide-react';
 
 const navItems = [
   { href: '/admin', label: 'Inicio', icon: LayoutDashboard },
   { href: '/admin/products', label: 'Productos', icon: Package },
+  { href: '/admin/productos-explorador', label: 'Explorador tabla', icon: Table2 },
+  { href: '/admin/caracteristicas-explorador', label: 'Características (colores)', icon: Palette },
   { href: '/admin/galleries', label: 'Galerías por línea', icon: Images },
   { href: '/admin/sync', label: 'Sincronizar', icon: RefreshCw },
   { href: '/admin/users', label: 'Usuarios', icon: Users },

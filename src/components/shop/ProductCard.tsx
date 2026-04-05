@@ -11,6 +11,8 @@ export type ProductCardData = {
   colores?: string;
   imageUrls?: string[];
   isNew?: boolean;
+  /** Si se define, el enlace del producto usa esta ruta (ej. catálogo agrupado por groupId). */
+  href?: string;
 };
 
 type Props = {
@@ -22,12 +24,14 @@ type Props = {
 export function ProductCard({ product, variant = "default" }: Props) {
   const imageUrl = product.imageUrls?.[0] ?? null;
   const colorCount = product.colores ? product.colores.split(/[,;]/).length : 0;
-  const colorLabel = colorCount > 0 ? `${colorCount} colores` : "Ver colores";
+  const colorLabel =
+    colorCount > 0 ? `${colorCount} color${colorCount === 1 ? "" : "es"}` : "Ver colores";
+  const detailHref = product.href ?? `/shop/${product.id}`;
   const isRelated = variant === "related";
 
   return (
     <Link
-      href={`/shop/${product.id}`}
+      href={detailHref}
       className="group flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-md"
     >
       <div className="relative aspect-square w-full overflow-hidden bg-slate-100">

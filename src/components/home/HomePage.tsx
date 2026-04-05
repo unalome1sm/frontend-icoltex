@@ -1,3 +1,4 @@
+import { HOME_TWO_PANEL_IMAGES } from "@/config/homeMedia";
 import { BannerCarousel } from "./BannerCarousel";
 import { TwoImageSection } from "./TwoImageSection";
 import { DestacadosSection } from "./DestacadosSection";
@@ -21,7 +22,10 @@ export function HomePage() {
         className="w-screen max-w-none"
         style={{ marginLeft: "calc(50% - 50vw)", marginRight: "calc(50% - 50vw)" }}
       >
-        <TwoImageSection />
+        <TwoImageSection
+          imageLeft={HOME_TWO_PANEL_IMAGES.left}
+          imageRight={HOME_TWO_PANEL_IMAGES.right}
+        />
       </section>
 
       <div className="space-y-12 pt-12">
