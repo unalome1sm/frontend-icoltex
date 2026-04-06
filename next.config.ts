@@ -19,6 +19,21 @@ const backendBase = normalizeBackendBase(
     "http://127.0.0.1:3001",
 );
 
+const hasBackendEnv = !!(
+  process.env.API_URL ||
+  process.env.BACKEND_URL ||
+  process.env.NEXT_PUBLIC_API_URL
+);
+if (process.env.VERCEL === "1" && !hasBackendEnv) {
+  console.warn(
+    "\n⚠️  Icoltex: sin API_URL / BACKEND_URL / NEXT_PUBLIC_API_URL en Vercel. " +
+      "Las rutas /api/* no proxyean a tu backend → 404 en producción.\n" +
+      "   Añade en Vercel → Settings → Environment Variables:\n" +
+      "   NEXT_PUBLIC_API_URL=https://tu-backend-publico.com\n" +
+      "   (sin barra final). Incluye el mismo origen en CORS_ORIGINS del backend.\n",
+  );
+}
+
 const nextConfig: NextConfig = {
   reactCompiler: true,
   async rewrites() {

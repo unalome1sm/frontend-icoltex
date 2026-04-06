@@ -7,13 +7,24 @@ function backendBase(): string {
   ).replace(/\/$/, '');
 }
 
+/** Base pública del API (Vercel / prod): debe ser HTTPS sin barra final. */
+function publicApiBase(): string {
+  const raw = process.env.NEXT_PUBLIC_API_URL?.trim() ?? '';
+  return raw.replace(/\/$/, '');
+}
+
 /**
- * Browser: same-origin `/api/...` (proxied via next.config rewrites → backend).
- * Server: direct URL to the backend (works during `next build` without a running Next server).
+ * - Navegador: si existe `NEXT_PUBLIC_API_URL`, llama al backend directo (CORS en el servidor).
+ *   Si no, usa `/api/...` mismo origen (rewrite en `next.config` → backend).
+ * - Servidor (RSC, build): URL directa con `API_URL` / `BACKEND_URL` / `NEXT_PUBLIC_API_URL`.
  */
 export function getApiUrl(path: string): string {
   const segment = path.startsWith('/') ? path : `/${path}`;
   if (typeof window !== 'undefined') {
+    const base = publicApiBase();
+    if (base && /^https?:\/\//i.test(base)) {
+      return `${base}${segment}`;
+    }
     return segment;
   }
   return `${backendBase()}${segment}`;
