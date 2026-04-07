@@ -5,8 +5,8 @@ import Link from "next/link";
 import { Search, ShoppingCart } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 
-const NAV_LOGO_MOBILE_SRC = "/icons/LOGOS-03.svg";
-const NAV_LOGO_DESKTOP_SRC = `/icons/${encodeURIComponent("LOGOS_Mesa de trabajo 1.svg")}`;
+/** Marca compacta (misma en móvil y desktop; ancho responsive como el wordmark anterior). */
+const NAV_LOGO_SRC = "/icons/LOGOS-03.svg";
 
 const NAV_LINKS = [
   { label: "Antifluidos", href: "/shop?category=antifluidos" },
@@ -21,30 +21,19 @@ export function Navbar() {
 
   return (
     <header className="w-full border-b border-slate-200 bg-white">
-      <div className="flex w-full items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        {/* Logo - izquierda */}
+      <div className="flex w-full items-center justify-between gap-3 px-4 py-4 sm:gap-4 sm:px-6 lg:px-8">
+        {/* Logo: sin margen extra; compensa padding del header para alinear al borde útil */}
         <Link
           href="/"
-          className="m-0 flex h-3.5 shrink-0 items-center justify-start overflow-visible p-0 leading-none"
+          className="m-0 flex h-11 shrink-0 items-center justify-start p-0 leading-[0] outline-offset-2 [-webkit-tap-highlight-color:transparent] -ml-4 sm:-ml-6 lg:-ml-8"
           aria-label="Icoltex - Inicio"
         >
-          {/* Móvil / tablet hasta md: marca compacta (LOGOS-03) */}
           <Image
-            src={NAV_LOGO_MOBILE_SRC}
+            src={NAV_LOGO_SRC}
             alt="Icoltex"
             width={480}
             height={250}
-            className="m-0 block h-3.5 w-auto max-w-[min(18vw,7rem)] object-contain object-left p-0 align-middle md:hidden"
-            priority
-            unoptimized
-          />
-          {/* Desktop (md+): logotipo completo */}
-          <Image
-            src={NAV_LOGO_DESKTOP_SRC}
-            alt="Icoltex"
-            width={1405}
-            height={186}
-            className="m-0 hidden h-3.5 w-auto object-contain object-left p-0 md:block md:max-w-[min(18vw,7rem)] lg:max-w-[min(15vw,9rem)] xl:max-w-[min(13vw,10rem)]"
+            className="m-0 block h-11 w-auto max-h-11 object-contain object-left p-0 max-w-[min(52vw,11rem)] sm:max-w-[min(44vw,13rem)] md:max-w-[14rem] lg:max-w-[15rem]"
             priority
             unoptimized
           />
