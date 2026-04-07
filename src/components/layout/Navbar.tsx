@@ -20,20 +20,20 @@ export function Navbar() {
   const { openCart, itemCount } = useCart();
 
   return (
-    <header className="w-full border-b border-slate-200 bg-white">
-      <div className="flex w-full items-center justify-between gap-3 px-4 py-4 sm:gap-4 sm:px-6 lg:px-8">
-        {/* Logo: sin margen extra; compensa padding del header para alinear al borde útil */}
+    <header className="w-full overflow-visible border-b border-slate-200 bg-white">
+      <div className="flex w-full items-center justify-between gap-3 overflow-visible px-4 py-4 sm:gap-4 sm:px-6 lg:px-8">
+        {/* Logo: altura solo en la imagen + overflow visible para no recortar el SVG */}
         <Link
           href="/"
-          className="m-0 flex h-11 shrink-0 items-center justify-start p-0 leading-[0] outline-offset-2 [-webkit-tap-highlight-color:transparent] -ml-4 sm:-ml-6 lg:-ml-8"
+          className="m-0 flex shrink-0 items-center justify-start overflow-visible p-0 leading-none outline-offset-2 [-webkit-tap-highlight-color:transparent] -ml-4 sm:-ml-6 lg:-ml-8"
           aria-label="Icoltex - Inicio"
         >
           <Image
             src={NAV_LOGO_SRC}
             alt="Icoltex"
-            width={480}
-            height={250}
-            className="m-0 block h-11 w-auto max-h-11 object-contain object-left p-0 max-w-[min(52vw,11rem)] sm:max-w-[min(44vw,13rem)] md:max-w-[14rem] lg:max-w-[15rem]"
+            width={1920}
+            height={1080}
+            className="m-0 block h-11 w-auto max-h-11 object-contain object-left p-0 max-w-[min(60vw,14rem)] sm:max-w-[min(54vw,16rem)] md:max-w-[17rem] lg:max-w-[20rem]"
             priority
             unoptimized
           />
