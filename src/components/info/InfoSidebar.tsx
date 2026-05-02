@@ -37,7 +37,7 @@ export function InfoSidebar({
       <nav className="px-4 pb-10">
         <div className="space-y-5">
           {sections.map((section) => (
-            <details key={section.label} open className="group">
+            <details key={section.label} className="group">
               <summary className="flex cursor-pointer list-none items-center justify-between rounded-md border-l-4 border-red-600 bg-red-50 px-4 py-2 text-sm font-medium text-slate-900">
                 <span>{section.label}</span>
                 <span className="text-slate-600">▾</span>
@@ -64,7 +64,7 @@ export function InfoSidebar({
                 })}
 
                 {section.groups?.map((group) => (
-                  <details key={group.label} open className="group">
+                  <details key={group.label} className="group">
                     <summary className="mt-2 flex cursor-pointer list-none items-center justify-between rounded-md border-l-4 border-red-600 bg-red-50 px-4 py-2 text-sm font-medium text-slate-900">
                       <span>{group.label}</span>
                       <span className="text-slate-600">▾</span>
