@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 
 type Store = {
   id: string;
@@ -12,6 +12,21 @@ type Store = {
   status: string;
   city: string;
 };
+
+type StoreHoursRow = {
+  day: string;
+  hours: string;
+};
+
+const DEFAULT_HOURS: StoreHoursRow[] = [
+  { day: "Lunes", hours: "10:00 - 19:00" },
+  { day: "Martes", hours: "10:00 - 19:00" },
+  { day: "Miércoles", hours: "10:00 - 19:00" },
+  { day: "Jueves", hours: "10:00 - 19:00" },
+  { day: "Viernes", hours: "10:00 - 19:00" },
+  { day: "Sábado", hours: "10:00 - 19:00" },
+  { day: "Domingo", hours: "Cerrado" },
+];
 
 const MOCK_STORES: Store[] = [
   { id: "1", name: "Alqueria", phone: "322 208-8441", address: "CL 42b Sur #52b-16", status: "Cerrado · Abre el lunes 10:00", city: "bogota" },
@@ -30,10 +45,116 @@ const CITIES = [
   { value: "barranquilla", label: "Barranquilla" },
 ];
 
+function cityLabel(value: string) {
+  return CITIES.find((c) => c.value === value)?.label ?? value;
+}
+
+function getDirectionsUrl(store: Store) {
+  const q = encodeURIComponent(`${store.address}, ${cityLabel(store.city)}, Colombia`);
+  return `https://www.google.com/maps/search/?api=1&query=${q}`;
+}
+
+function StoreDetailPanel({
+  store,
+  onClose,
+}: {
+  store: Store;
+  onClose: () => void;
+}) {
+  const title = `${store.name} - ${cityLabel(store.city)}`;
+  const directionsUrl = getDirectionsUrl(store);
+
+  return (
+    <div className="absolute left-4 top-4 z-10 w-[min(92%,22rem)] rounded-xl border border-slate-200 bg-white shadow-lg">
+      <div className="flex items-start justify-between gap-3 p-4">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-slate-900">{title}</p>
+          <p className="mt-0.5 text-xs text-slate-500">{store.status}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+          aria-label="Cerrar"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+
+      <div className="flex gap-2 px-4 pb-3">
+        <a
+          href={directionsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center justify-center rounded-md bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
+        >
+          Cómo llegar
+        </a>
+        <button
+          type="button"
+          className="inline-flex items-center justify-center rounded-md bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
+          onClick={() => {
+            // Placeholder hasta que exista un enlace real por tienda
+            window.open(directionsUrl, "_blank", "noopener,noreferrer");
+          }}
+        >
+          Video guía
+        </button>
+      </div>
+
+      <div className="px-4 pb-4">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-700">
+          Galería
+        </p>
+        <div className="mt-2 grid grid-cols-3 gap-2">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="aspect-[4/3] w-full rounded-md border border-slate-200 bg-slate-100"
+              aria-label="Imagen de la tienda"
+            />
+          ))}
+        </div>
+
+        <div className="mt-4 space-y-3 text-sm text-slate-700">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-700">
+              Dirección
+            </p>
+            <p className="mt-1">{store.address}</p>
+          </div>
+
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-700">
+              Horario
+            </p>
+            <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+              {DEFAULT_HOURS.map((row) => (
+                <div key={row.day} className="contents">
+                  <span className="text-slate-600">{row.day}</span>
+                  <span className="text-slate-900">{row.hours}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-700">
+              Teléfono
+            </p>
+            <p className="mt-1">{store.phone}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function StoresPageContent() {
   const searchParams = useSearchParams();
   const cityParam = searchParams.get("ciudad") ?? "";
   const [selectedCity, setSelectedCity] = useState("");
+  const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
 
   useEffect(() => {
     if (cityParam && CITIES.some((c) => c.value === cityParam)) {
@@ -46,6 +167,17 @@ export function StoresPageContent() {
     return MOCK_STORES.filter((s) => s.city === selectedCity);
   }, [selectedCity]);
 
+  const selectedStore = useMemo(() => {
+    if (!selectedStoreId) return null;
+    return filteredStores.find((s) => s.id === selectedStoreId) ?? null;
+  }, [filteredStores, selectedStoreId]);
+
+  useEffect(() => {
+    if (selectedStoreId && !filteredStores.some((s) => s.id === selectedStoreId)) {
+      setSelectedStoreId(null);
+    }
+  }, [filteredStores, selectedStoreId]);
+
   return (
     <div className="min-h-screen">
       {/* Pegado a la barra de promoción (como el banner del home: -mt-8) */}
@@ -53,7 +185,7 @@ export function StoresPageContent() {
         className="-mt-8 w-screen max-w-none"
         style={{ marginLeft: "calc(50% - 50vw)", marginRight: "calc(50% - 50vw)" }}
       >
-        <div className="relative flex min-h-[540px] w-full flex-col items-center justify-center overflow-hidden bg-red-600 px-6 text-center md:min-h-[720px] md:px-10">
+        <div className="relative flex min-h-[320px] w-full flex-col items-center justify-center overflow-hidden bg-red-600 px-6 text-center md:min-h-[420px] md:px-10">
           <div
             className="absolute inset-0 opacity-20"
             aria-hidden
@@ -108,7 +240,17 @@ export function StoresPageContent() {
                 filteredStores.map((store) => (
                   <div
                     key={store.id}
-                    className="border-b border-slate-100 bg-white p-4 last:border-b-0 hover:bg-slate-50/50"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setSelectedStoreId(store.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") setSelectedStoreId(store.id);
+                    }}
+                    className={[
+                      "cursor-pointer border-b border-slate-100 bg-white p-4 last:border-b-0",
+                      "hover:bg-slate-50/50 focus:outline-none focus:ring-2 focus:ring-red-500/40",
+                      selectedStoreId === store.id ? "bg-red-50" : "",
+                    ].join(" ")}
                   >
                     <p className="font-semibold text-slate-900">{store.name}</p>
                     <p className="mt-0.5 text-sm text-slate-600">{store.phone}</p>
@@ -123,7 +265,13 @@ export function StoresPageContent() {
           </div>
 
           {/* Columna derecha: Mapa */}
-          <div className="min-h-[400px] flex-1 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 shadow-sm">
+          <div className="relative min-h-[400px] flex-1 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 shadow-sm">
+            {selectedStore && (
+              <StoreDetailPanel
+                store={selectedStore}
+                onClose={() => setSelectedStoreId(null)}
+              />
+            )}
             <iframe
               title="Mapa de tiendas"
               src="https://www.openstreetmap.org/export/embed.html?bbox=-74.15%2C4.60%2C-74.05%2C4.70&layer=mapnik&marker=4.6516,-74.0997"

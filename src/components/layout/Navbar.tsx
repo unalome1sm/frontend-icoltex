@@ -9,11 +9,8 @@ import { useCart } from "@/contexts/CartContext";
 const NAV_LOGO_SRC = "/icons/LOGOS-03.svg";
 
 const NAV_LINKS = [
-  { label: "Antifluidos", href: "/shop?category=antifluidos" },
-  { label: "Antifluidos", href: "/shop?category=antifluidos" },
-  { label: "Antifluidos", href: "/shop?category=antifluidos" },
-  { label: "Antifluidos", href: "/shop?category=antifluidos" },
-  { label: "Icoltex", href: "/shop" },
+  { label: "Inicio", href: "/" },
+  { label: "Shop", href: "/shop" },
 ];
 
 export function Navbar() {

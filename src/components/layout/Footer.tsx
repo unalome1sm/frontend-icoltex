@@ -28,10 +28,17 @@ const AYUDA_LINKS = [
 
 const ACERCA_LINKS = [
   { label: "Acerca de Icoltex", href: "/about" },
+  { label: "Sostenibilidad", href: "/about/sostenibilidad" },
   // { label: "Noticias", href: "/noticias" },
   // { label: "Inversionistas", href: "/inversionistas" },
   // { label: "Propósito", href: "/proposito" },
   // { label: "Sostenibilidad", href: "/sostenibilidad" },
+];
+
+const LEGAL_LINKS = [
+  { label: "Políticas", href: "/about/politicas" },
+  { label: "Tratamiento de datos", href: "/about/tratamiento-datos" },
+  { label: "Términos y condiciones promociones", href: "/about/promociones" },
 ];
 
 const PUNTOS_LINKS = [
@@ -81,7 +88,7 @@ export function Footer() {
   return (
     <footer className="w-full border-t border-slate-200 bg-white">
       <div className="w-full py-12 pl-8 pr-4 sm:pl-12 sm:pr-6 lg:pl-16 lg:pr-8">
-        <div className="grid w-full grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid w-full grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-5">
           {/* Recursos Icoltex + redes */}
           <div className="flex flex-col gap-4">
             <h3 className="text-sm font-bold uppercase tracking-wide text-gray-900">
@@ -115,6 +122,7 @@ export function Footer() {
 
           <FooterColumn title="Ayuda" links={AYUDA_LINKS} />
           <FooterColumn title="Acerca de Icoltex" links={ACERCA_LINKS} />
+          <FooterColumn title="Legal" links={LEGAL_LINKS} />
           <FooterColumn title="Puntos de venta" links={PUNTOS_LINKS} />
         </div>
 
