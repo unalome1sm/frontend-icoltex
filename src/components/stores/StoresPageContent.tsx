@@ -9,8 +9,10 @@ type Store = {
   name: string;
   phone: string;
   address: string;
-  status: string;
   city: string;
+  status?: string;
+  googleMapsUrl?: string;
+  videoGuideUrl?: string;
 };
 
 type StoreHoursRow = {
@@ -28,28 +30,146 @@ const DEFAULT_HOURS: StoreHoursRow[] = [
   { day: "Domingo", hours: "Cerrado" },
 ];
 
-const MOCK_STORES: Store[] = [
-  { id: "1", name: "Alqueria", phone: "322 208-8441", address: "CL 42b Sur #52b-16", status: "Cerrado · Abre el lunes 10:00", city: "bogota" },
-  { id: "2", name: "Alqueria", phone: "322 208-8442", address: "CL 42b Sur #520-16", status: "Abierto · Cierra 19:00", city: "bogota" },
-  { id: "3", name: "Alqueria", phone: "322 208-8443", address: "CL 42b Sur #52S-16", status: "Cerrado · Abre el martes 09:00", city: "bogota" },
-  { id: "4", name: "Alqueria", phone: "322 208-8444", address: "CL 42b Sur #525-16", status: "Cerrado · Abre el lunes 10:00", city: "bogota" },
-  { id: "5", name: "Alqueria", phone: "322 208-8445", address: "CL 42b Sur #52B-16", status: "Abierto · Cierra 18:00", city: "bogota" },
-  { id: "6", name: "Punto Medellín", phone: "310 111-2233", address: "Calle 50 #43-21", status: "Abierto · Cierra 20:00", city: "medellin" },
-  { id: "7", name: "Punto Barranquilla", phone: "315 444-5566", address: "Carrera 52 #84-10", status: "Cerrado · Abre el lunes 08:00", city: "barranquilla" },
+const STORES: Store[] = [
+  {
+    id: "bogota-alqueria-1",
+    name: "Alquería",
+    phone: "(322) 208-8441",
+    address: "Cl. 42b Sur #52b-16",
+    city: "bogota",
+    googleMapsUrl: "https://share.google/gIqpy1U9cUnRvW5TD",
+    videoGuideUrl:
+      "https://drive.google.com/file/d/1P3jVcNkFPCISrxzSF991FIjrE4UcR91b/preview",
+  },
+  {
+    id: "bogota-alqueria-2",
+    name: "Alquería 2",
+    phone: "(310) 232-6761",
+    address: "Cra. 52c #41-36 Sur",
+    city: "bogota",
+    googleMapsUrl: "https://share.google/zT2P4XQw8r8FGrF8H",
+    videoGuideUrl:
+      "https://drive.google.com/file/d/1sz0QD5MuJUT8_pJdWNE_07UTeP_SyHqx/preview",
+  },
+  {
+    id: "bogota-policarpa",
+    name: "Policarpa",
+    phone: "(321) 436-5427",
+    address: "Cl. 3 Sur #12A-18",
+    city: "bogota",
+    googleMapsUrl: "https://share.google/7Wc2T75GQy3saLPwn",
+    videoGuideUrl:
+      "https://drive.google.com/file/d/10d7zYA4qZ028K90gpuv9sDCVkDgvRo_o/preview",
+  },
+  {
+    id: "bogota-restrepo",
+    name: "Restrepo",
+    phone: "(310) 726-8655",
+    address: "Cra. 24C #17-48 Sur",
+    city: "bogota",
+    googleMapsUrl: "https://share.google/c1H0AJlDWcqEhTnHr",
+    videoGuideUrl:
+      "https://drive.google.com/file/d/1ZeoTEdraVhUxfu48uWc1AbvO0C4_7ExV/preview",
+  },
+  {
+    id: "bogota-centro-1",
+    name: "Centro 1",
+    phone: "(312) 328-0780",
+    address: "Cra. 13 #17-60",
+    city: "bogota",
+    googleMapsUrl: "https://share.google/7HrYtW0Rjs3VpvRZ2",
+    videoGuideUrl:
+      "https://drive.google.com/file/d/1ggy5yRZG-Z9QtLLvuVShX7NQSO4bRoU6/preview",
+  },
+
+  {
+    id: "medellin-principal",
+    name: "Principal",
+    phone: "(310) 256-0796",
+    address: "Cl. 49 #53-76",
+    city: "medellin",
+    googleMapsUrl: "https://share.google/iDnue3illCto8FtnI",
+  },
+  {
+    id: "medellin-ayacucho",
+    name: "Ayacucho",
+    phone: "(310) 256-0842",
+    address: "Cl. 49 #54-70",
+    city: "medellin",
+    googleMapsUrl: "https://share.google/NfOSPVRi4aWYuU7bL",
+  },
+  {
+    id: "medellin-la-54",
+    name: "La 54",
+    phone: "(312) 561-8463",
+    address: "Cra. 54 #48-75",
+    city: "medellin",
+    googleMapsUrl: "https://share.google/gNicvGnY8v9jG2nia",
+  },
+
+  {
+    id: "cali-principal",
+    name: "Principal",
+    phone: "(310) 842-5564",
+    address: "Cra. 8 #15-32",
+    city: "cali",
+    googleMapsUrl: "https://share.google/67gYADYVc2C6shdoH",
+    videoGuideUrl:
+      "https://drive.google.com/file/d/17mtxA3BFxjKbh0V5jnvcqQdWSmdbRAmF/preview",
+  },
+  {
+    id: "cali-2",
+    name: "Cali 2",
+    phone: "(321) 474-7156",
+    address: "Cra. 7 #11-1",
+    city: "cali",
+    googleMapsUrl: "https://share.google/75TC30CHOwFVBLQTe",
+    videoGuideUrl:
+      "https://drive.google.com/file/d/1liLMg28WDxO0JLQKb5GLahMbRWvxYqG-/preview",
+  },
+
+  {
+    id: "barranquilla-principal",
+    name: "Principal",
+    phone: "322 836-8622",
+    address: "Cl. 32 #43-86",
+    city: "barranquilla",
+    googleMapsUrl: "https://share.google/wrG5JGhqQC1UsaKOl",
+  },
+
+  {
+    id: "pereira-principal",
+    name: "Principal",
+    phone: "(321) 437-8115",
+    address: "Cra. 6 #14-31",
+    city: "pereira",
+    googleMapsUrl: "https://share.google/tbPtgSg3q3Wo7pASa",
+    videoGuideUrl:
+      "https://drive.google.com/file/d/1Ny4KEqTtulCeG_vBYGg4EjhrQvCRpAZS/preview",
+  },
 ];
 
 const CITIES = [
   { value: "", label: "Selecciona una ciudad" },
   { value: "bogota", label: "Bogotá" },
   { value: "medellin", label: "Medellín" },
+  { value: "cali", label: "Cali" },
   { value: "barranquilla", label: "Barranquilla" },
+  { value: "pereira", label: "Pereira" },
 ];
 
 function cityLabel(value: string) {
   return CITIES.find((c) => c.value === value)?.label ?? value;
 }
 
+function toDrivePreviewUrl(url: string): string {
+  const match = url.match(/drive\.google\.com\/file\/d\/([^/]+)\//i);
+  if (!match) return url;
+  return `https://drive.google.com/file/d/${match[1]}/preview`;
+}
+
 function getDirectionsUrl(store: Store) {
+  if (store.googleMapsUrl) return store.googleMapsUrl;
   const q = encodeURIComponent(`${store.address}, ${cityLabel(store.city)}, Colombia`);
   return `https://www.google.com/maps/search/?api=1&query=${q}`;
 }
@@ -57,9 +177,11 @@ function getDirectionsUrl(store: Store) {
 function StoreDetailPanel({
   store,
   onClose,
+  onOpenVideo,
 }: {
   store: Store;
   onClose: () => void;
+  onOpenVideo: () => void;
 }) {
   const title = `${store.name} - ${cityLabel(store.city)}`;
   const directionsUrl = getDirectionsUrl(store);
@@ -69,7 +191,9 @@ function StoreDetailPanel({
       <div className="flex items-start justify-between gap-3 p-4">
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-slate-900">{title}</p>
-          <p className="mt-0.5 text-xs text-slate-500">{store.status}</p>
+          {store.status ? (
+            <p className="mt-0.5 text-xs text-slate-500">{store.status}</p>
+          ) : null}
         </div>
         <button
           type="button"
@@ -93,10 +217,7 @@ function StoreDetailPanel({
         <button
           type="button"
           className="inline-flex items-center justify-center rounded-md bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
-          onClick={() => {
-            // Placeholder hasta que exista un enlace real por tienda
-            window.open(directionsUrl, "_blank", "noopener,noreferrer");
-          }}
+          onClick={onOpenVideo}
         >
           Video guía
         </button>
@@ -150,11 +271,82 @@ function StoreDetailPanel({
   );
 }
 
+function VideoGuideModal({
+  open,
+  title,
+  videoUrl,
+  onClose,
+}: {
+  open: boolean;
+  title: string;
+  videoUrl: string | null;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl">
+        <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
+          <p className="truncate text-sm font-semibold text-slate-900">{title}</p>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+            aria-label="Cerrar video guía"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="p-4">
+          {videoUrl ? (
+            <div className="aspect-[9/16] w-full overflow-hidden rounded-xl border border-slate-200 bg-black">
+              <iframe
+                title={title}
+                src={videoUrl}
+                className="h-full w-full"
+                allow="autoplay; encrypted-media; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          ) : (
+            <div className="rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-700">
+              <p className="font-semibold text-slate-900">Próximamente</p>
+              <p className="mt-2 leading-relaxed">
+                Próximamente te mostraremos una guía de llegada a nuestra tienda.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function StoresPageContent() {
   const searchParams = useSearchParams();
   const cityParam = searchParams.get("ciudad") ?? "";
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
+  const [videoOpen, setVideoOpen] = useState(false);
 
   useEffect(() => {
     if (cityParam && CITIES.some((c) => c.value === cityParam)) {
@@ -163,8 +355,8 @@ export function StoresPageContent() {
   }, [cityParam]);
 
   const filteredStores = useMemo(() => {
-    if (!selectedCity) return MOCK_STORES;
-    return MOCK_STORES.filter((s) => s.city === selectedCity);
+    if (!selectedCity) return STORES;
+    return STORES.filter((s) => s.city === selectedCity);
   }, [selectedCity]);
 
   const selectedStore = useMemo(() => {
@@ -177,6 +369,10 @@ export function StoresPageContent() {
       setSelectedStoreId(null);
     }
   }, [filteredStores, selectedStoreId]);
+
+  useEffect(() => {
+    if (!selectedStore) setVideoOpen(false);
+  }, [selectedStore]);
 
   return (
     <div className="min-h-screen">
@@ -270,8 +466,21 @@ export function StoresPageContent() {
               <StoreDetailPanel
                 store={selectedStore}
                 onClose={() => setSelectedStoreId(null)}
+                onOpenVideo={() => setVideoOpen(true)}
               />
             )}
+            {selectedStore ? (
+              <VideoGuideModal
+                open={videoOpen}
+                title={`Video guía · ${selectedStore.name} - ${cityLabel(selectedStore.city)}`}
+                videoUrl={
+                  selectedStore.videoGuideUrl
+                    ? toDrivePreviewUrl(selectedStore.videoGuideUrl)
+                    : null
+                }
+                onClose={() => setVideoOpen(false)}
+              />
+            ) : null}
             <iframe
               title="Mapa de tiendas"
               src="https://www.openstreetmap.org/export/embed.html?bbox=-74.15%2C4.60%2C-74.05%2C4.70&layer=mapnik&marker=4.6516,-74.0997"
