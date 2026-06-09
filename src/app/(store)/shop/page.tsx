@@ -1,39 +1,91 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { SlidersHorizontal, X } from "lucide-react";
 import { BannerCarousel } from "@/components/home/BannerCarousel";
 import { ShopFilters, ProductGrid, ShopSortBar } from "@/components/shop";
 import type { ProductCardData } from "@/components/shop";
 import { fetchGroupedProductsPage, groupedRowToCardData } from "@/lib/groupedCatalog";
+import {
+  DEFAULT_SHOP_FILTERS,
+  fetchCatalogFilterMeta,
+  shopFiltersActiveCount,
+  shopFiltersFromSearchParams,
+  shopFiltersToSearchParams,
+  type CatalogFilterMeta,
+  type ShopFilterState,
+} from "@/lib/shopFilters";
 
-const FALLBACK_PRODUCTS: ProductCardData[] = [
-  { id: "fallback-1", nombre: "Nombre ítem", descripcion: "Descripción ítem", colores: "A,B,C,D,E", precioMetro: 25000, isNew: true },
-  { id: "fallback-2", nombre: "Nombre ítem", descripcion: "Descripción ítem", colores: "A,B,C", precioMetro: 32000 },
-  { id: "fallback-3", nombre: "Nombre ítem", descripcion: "Descripción ítem", colores: "A,B,C,D,E,F", precioMetro: 18000, isNew: true },
-  { id: "fallback-4", nombre: "Nombre ítem", descripcion: "Descripción ítem", colores: "A,B", precioMetro: 41000 },
-];
+const PAGE_SIZE = 12;
+
+function filtersToQuery(filters: ShopFilterState, page: number) {
+  const precioMin = filters.precioMin.trim() ? Number(filters.precioMin) : undefined;
+  const precioMax = filters.precioMax.trim() ? Number(filters.precioMax) : undefined;
+
+  return {
+    page,
+    limit: PAGE_SIZE,
+    classFamily: filters.classFamily || undefined,
+    categories: filters.categories.length ? filters.categories : undefined,
+    colors: filters.colors.length ? filters.colors : undefined,
+    inStock: filters.inStock || undefined,
+    precioMin: precioMin != null && !Number.isNaN(precioMin) ? precioMin : undefined,
+    precioMax: precioMax != null && !Number.isNaN(precioMax) ? precioMax : undefined,
+    q: filters.q.trim() || undefined,
+    sort: filters.sort,
+  };
+}
 
 export default function ShopPage() {
-  const [sort, setSort] = useState("relevance");
-  const [products, setProducts] = useState<ProductCardData[]>(FALLBACK_PRODUCTS);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [filters, setFilters] = useState<ShopFilterState>(() =>
+    shopFiltersFromSearchParams(searchParams),
+  );
+  const [meta, setMeta] = useState<CatalogFilterMeta | null>(null);
+  const [loadingMeta, setLoadingMeta] = useState(true);
+  const [products, setProducts] = useState<ProductCardData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(() => Math.max(1, Number(searchParams.get("page")) || 1));
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 10,
+    limit: PAGE_SIZE,
     total: 0,
     totalPages: 0,
   });
 
+  const syncUrl = useCallback(
+    (nextFilters: ShopFilterState, nextPage: number) => {
+      const sp = shopFiltersToSearchParams(nextFilters, nextPage);
+      const qs = sp.toString();
+      router.replace(qs ? `/shop?${qs}` : "/shop", { scroll: false });
+    },
+    [router],
+  );
+
+  useEffect(() => {
+    fetchCatalogFilterMeta()
+      .then(setMeta)
+      .catch(() => setMeta(null))
+      .finally(() => setLoadingMeta(false));
+  }, []);
+
+  useEffect(() => {
+    const fromUrl = shopFiltersFromSearchParams(searchParams);
+    const urlPage = Math.max(1, Number(searchParams.get("page")) || 1);
+    setFilters(fromUrl);
+    setPage(urlPage);
+  }, [searchParams]);
+
   useEffect(() => {
     setLoading(true);
-    fetchGroupedProductsPage({ page, limit: 10 })
+    fetchGroupedProductsPage(filtersToQuery(filters, page))
       .then((data) => {
         const list = data.groups ?? [];
-        const listForUI = list.length > 0 ? list.map(groupedRowToCardData) : FALLBACK_PRODUCTS;
-        setProducts(listForUI);
+        setProducts(list.map(groupedRowToCardData));
         if (data.pagination) {
           setPagination({
             page: data.pagination.page,
@@ -43,9 +95,23 @@ export default function ShopPage() {
           });
         }
       })
-      .catch(() => setProducts(FALLBACK_PRODUCTS))
+      .catch(() => setProducts([]))
       .finally(() => setLoading(false));
-  }, [page]);
+  }, [filters, page]);
+
+  const handleFiltersChange = (next: ShopFilterState) => {
+    setFilters(next);
+    setPage(1);
+    syncUrl(next, 1);
+  };
+
+  const handleSortChange = (sort: string) => {
+    const next = { ...filters, sort: sort as ShopFilterState["sort"] };
+    setFilters(next);
+    syncUrl(next, page);
+  };
+
+  const activeCount = shopFiltersActiveCount(filters);
 
   return (
     <div className="space-y-0">
@@ -58,25 +124,53 @@ export default function ShopPage() {
 
       <div className="flex w-full flex-col lg:flex-row">
         <div className="hidden lg:block">
-          <ShopFilters />
+          <ShopFilters
+            meta={meta}
+            filters={filters}
+            onChange={handleFiltersChange}
+            loadingMeta={loadingMeta}
+          />
         </div>
+
         <main className="min-w-0 flex-1 border-slate-200 bg-white p-4 lg:p-6">
           <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center justify-between gap-3">
-              <h2 className="text-xl font-semibold text-slate-900">Destacados</h2>
+              <div>
+                <h2 className="text-xl font-semibold text-slate-900">Catálogo</h2>
+                {!loading && (
+                  <p className="text-sm text-slate-500">
+                    {pagination.total} producto{pagination.total !== 1 ? "s" : ""}
+                    {activeCount > 0 ? ` · ${activeCount} filtro${activeCount !== 1 ? "s" : ""} activo${activeCount !== 1 ? "s" : ""}` : ""}
+                  </p>
+                )}
+              </div>
               <button
                 type="button"
                 onClick={() => setFiltersOpen(true)}
                 className="inline-flex items-center gap-2 rounded border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 sm:hidden"
               >
                 <SlidersHorizontal className="h-4 w-4" />
-                <span>Filtros</span>
+                <span>Filtros{activeCount > 0 ? ` (${activeCount})` : ""}</span>
               </button>
             </div>
-            <ShopSortBar value={sort} onChange={setSort} />
+            <ShopSortBar value={filters.sort} onChange={handleSortChange} />
           </div>
+
           {loading ? (
-            <p className="py-8 text-center text-slate-500">Cargando productos...</p>
+            <p className="py-8 text-center text-slate-500">Cargando productos…</p>
+          ) : products.length === 0 ? (
+            <div className="py-12 text-center">
+              <p className="text-slate-600">No hay productos con estos filtros.</p>
+              {activeCount > 0 && (
+                <button
+                  type="button"
+                  onClick={() => handleFiltersChange({ ...DEFAULT_SHOP_FILTERS, sort: filters.sort })}
+                  className="mt-3 text-sm font-medium text-red-600 hover:text-red-700"
+                >
+                  Limpiar filtros
+                </button>
+              )}
+            </div>
           ) : (
             <>
               <ProductGrid products={products} />
@@ -87,7 +181,11 @@ export default function ShopPage() {
                 >
                   <button
                     type="button"
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    onClick={() => {
+                      const p = Math.max(1, page - 1);
+                      setPage(p);
+                      syncUrl(filters, p);
+                    }}
                     disabled={page <= 1}
                     className="rounded border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                   >
@@ -98,7 +196,11 @@ export default function ShopPage() {
                   </span>
                   <button
                     type="button"
-                    onClick={() => setPage((p) => Math.min(pagination.totalPages || 1, p + 1))}
+                    onClick={() => {
+                      const p = Math.min(pagination.totalPages || 1, page + 1);
+                      setPage(p);
+                      syncUrl(filters, p);
+                    }}
                     disabled={page >= (pagination.totalPages || 1)}
                     className="rounded border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                   >
@@ -119,8 +221,9 @@ export default function ShopPage() {
             onClick={() => setFiltersOpen(false)}
             aria-label="Cerrar filtros"
           />
-          <div className="relative h-full w-80 max-w-[80vw] bg-white shadow-xl">
+          <div className="relative flex h-full w-80 max-w-[85vw] flex-col bg-white shadow-xl">
             <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+              <span className="font-medium text-slate-900">Filtros</span>
               <button
                 type="button"
                 onClick={() => setFiltersOpen(false)}
@@ -130,7 +233,16 @@ export default function ShopPage() {
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <ShopFilters />
+            <div className="flex-1 overflow-y-auto">
+              <ShopFilters
+                meta={meta}
+                filters={filters}
+                onChange={(next) => {
+                  handleFiltersChange(next);
+                }}
+                loadingMeta={loadingMeta}
+              />
+            </div>
           </div>
         </div>
       )}

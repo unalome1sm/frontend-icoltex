@@ -30,11 +30,35 @@ export type GroupedProductRow = {
   variantCount: number;
 };
 
+export type CatalogSortOption = "relevance" | "price-asc" | "price-desc" | "name";
+
+export type GroupedProductsQuery = {
+  page?: number;
+  limit?: number;
+  category?: string;
+  categories?: string[];
+  classFamily?: string;
+  colors?: string[];
+  q?: string;
+  activo?: boolean;
+  precioMin?: number;
+  precioMax?: number;
+  inStock?: boolean;
+  sort?: CatalogSortOption;
+};
+
 export type GroupedProductsResponse = {
   groups: GroupedProductRow[];
   pagination: { page: number; limit: number; total: number; totalPages: number };
+  source?: string;
   error?: string;
 };
+
+function variantDisplayPrice(v: GroupedProductVariant): number | undefined {
+  const isKg = v.unidadMedida?.toUpperCase() === "KG";
+  if (isKg) return v.precioKilos ?? v.precioMetro;
+  return v.precioMetro ?? v.precioKilos;
+}
 
 const MONGO_ID_RE = /^[a-f\d]{24}$/i;
 
@@ -42,22 +66,23 @@ export function isMongoObjectId(id: string): boolean {
   return MONGO_ID_RE.test(id);
 }
 
-export async function fetchGroupedProductsPage(params: {
-  page?: number;
-  limit?: number;
-  category?: string;
-  classFamily?: string;
-  q?: string;
-  activo?: boolean;
-}): Promise<GroupedProductsResponse> {
+export async function fetchGroupedProductsPage(
+  params: GroupedProductsQuery,
+): Promise<GroupedProductsResponse> {
   const sp = new URLSearchParams();
   if (params.page != null) sp.set("page", String(params.page));
   if (params.limit != null) sp.set("limit", String(params.limit));
-  if (params.category) sp.set("category", params.category);
   if (params.classFamily) sp.set("classFamily", params.classFamily);
+  if (params.categories?.length) sp.set("categories", params.categories.join(","));
+  else if (params.category) sp.set("category", params.category);
+  if (params.colors?.length) sp.set("colors", params.colors.join(","));
   if (params.q) sp.set("q", params.q);
   if (params.activo === true) sp.set("activo", "true");
   if (params.activo === false) sp.set("activo", "false");
+  if (params.precioMin != null) sp.set("precioMin", String(params.precioMin));
+  if (params.precioMax != null) sp.set("precioMax", String(params.precioMax));
+  if (params.inStock) sp.set("inStock", "true");
+  if (params.sort && params.sort !== "relevance") sp.set("sort", params.sort);
   const q = sp.toString();
   const res = await fetch(getApiUrl(`/api/catalog/grouped-products${q ? `?${q}` : ""}`));
   const data = (await res.json()) as GroupedProductsResponse;
@@ -79,12 +104,14 @@ export function groupedRowToCardData(row: GroupedProductRow): ProductCardData {
     .map((u) => getImageDisplayUrl(toDirectImageUrl(u)))
     .filter(Boolean);
   const colores = row.variantes.map((v) => v.colorLabel).join(",");
+  const precio = row.precioDesde ?? (first ? variantDisplayPrice(first) : undefined);
+
   return {
     id: row.groupId,
     href: `/shop/${row.groupId}`,
     nombre: row.nombreVitrina,
     descripcion: first?.caracteristica,
-    precioMetro: row.precioDesde ?? first?.precioMetro,
+    precioMetro: precio,
     colores: colores || undefined,
     imageUrls: imageUrls.length ? imageUrls : undefined,
   };

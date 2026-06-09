@@ -3,12 +3,16 @@ import { Navbar } from "./Navbar";
 import { PromoBar } from "./PromoBar";
 import { Footer } from "./Footer";
 import { AuthSidebarProvider } from "@/contexts/AuthSidebarContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { AuthSidebar } from "@/components/auth/AuthSidebar";
+import { GoogleAuthProvider } from "@/components/auth/google/GoogleAuthProvider";
 import { CartProvider } from "@/contexts/CartContext";
 import { CartSidebar } from "@/components/cart/CartSidebar";
 
 export function StoreLayout({ children }: { children: React.ReactNode }) {
   return (
+    <GoogleAuthProvider>
+    <AuthProvider>
     <AuthSidebarProvider>
       <CartProvider>
         <div className="flex min-h-screen flex-col">
@@ -24,5 +28,7 @@ export function StoreLayout({ children }: { children: React.ReactNode }) {
         <CartSidebar />
       </CartProvider>
     </AuthSidebarProvider>
+    </AuthProvider>
+    </GoogleAuthProvider>
   );
 }

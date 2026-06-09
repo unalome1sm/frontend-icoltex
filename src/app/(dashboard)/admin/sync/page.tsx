@@ -27,24 +27,25 @@ export default function AdminSyncPage() {
     <div className="rounded-lg border border-slate-200 bg-white p-6">
       <h2 className="mb-4 text-base font-semibold text-slate-900">Sincronizar datos</h2>
       <p className="mb-6 text-sm text-slate-600">
-        Sincroniza clientes, productos, clases y categorías desde Icoltex.
+        Para la tienda: sincroniza <strong>Productos</strong> (precios desde items_icoltex) y{" "}
+        <strong>Catálogo vitrina</strong> (estructura desde caracterisiticas_items_icoltex).
       </p>
       <div className="flex flex-wrap gap-3">
-        <button
-          type="button"
-          onClick={() => runSync('clients')}
-          disabled={!!loading}
-          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
-        >
-          {loading === 'clients' ? 'Sincronizando...' : 'Clientes'}
-        </button>
         <button
           type="button"
           onClick={() => runSync('products')}
           disabled={!!loading}
           className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
         >
-          {loading === 'products' ? 'Sincronizando...' : 'Productos'}
+          {loading === 'products' ? 'Sincronizando...' : 'Productos (precios)'}
+        </button>
+        <button
+          type="button"
+          onClick={() => runSync('catalog-vitrina')}
+          disabled={!!loading}
+          className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+        >
+          {loading === 'catalog-vitrina' ? 'Sincronizando...' : 'Catálogo vitrina'}
         </button>
         <button
           type="button"

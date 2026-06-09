@@ -25,6 +25,7 @@ function compareStr(a: string, b: string, dir: "asc" | "desc"): number {
 
 export function ItemCharacteristicsExplorer() {
   const [items, setItems] = useState<ItemCharacteristic[]>([]);
+  const [meta, setMeta] = useState<{ groupCount: number; source?: string; lastSyncedAt?: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("clase");
@@ -41,6 +42,11 @@ export function ItemCharacteristicsExplorer() {
     try {
       const data = await fetchItemCharacteristics();
       setItems(data.items ?? []);
+      setMeta({
+        groupCount: data.groupCount ?? 0,
+        source: data.source,
+        lastSyncedAt: data.lastSyncedAt,
+      });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error al cargar características");
       setItems([]);
@@ -129,12 +135,19 @@ export function ItemCharacteristicsExplorer() {
           Características de catálogo (Tangara)
         </h1>
         <p className="mt-1 text-sm text-slate-600">
-          Datos del webhook{" "}
-          <code className="rounded bg-slate-100 px-1 text-xs">
-            caracterisiticas_items_icoltex
-          </code>{" "}
-          vía <code className="rounded bg-slate-100 px-1 text-xs">GET /api/catalog/item-characteristics</code>.
-          Una fila por combinación clase + categoría + color.
+          Catálogo vitrina Tangara (
+          <code className="rounded bg-slate-100 px-1 text-xs">caracterisiticas_items_icoltex</code>
+          ) cruzado con precios de{" "}
+          <code className="rounded bg-slate-100 px-1 text-xs">items_icoltex</code> en MongoDB.
+          {meta && (
+            <>
+              {" "}
+              · {meta.groupCount} grupos · fuente: {meta.source ?? "—"}
+              {meta.lastSyncedAt && (
+                <> · sync: {new Date(meta.lastSyncedAt).toLocaleString("es-CO")}</>
+              )}
+            </>
+          )}
         </p>
       </div>
 
@@ -210,9 +223,10 @@ export function ItemCharacteristicsExplorer() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_240px]">
         <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
           <div className="max-h-[70vh] overflow-auto">
-            <table className="w-full min-w-[640px] border-collapse text-left text-sm">
+            <table className="w-full min-w-[900px] border-collapse text-left text-sm">
               <thead className="sticky top-0 z-10 bg-slate-100 shadow-sm">
                 <tr>
+                  <th className="border-b border-slate-200 px-3 py-2 font-semibold text-slate-800">Vitrina</th>
                   <th className="border-b border-slate-200 px-3 py-2 font-semibold text-slate-800">
                     <button
                       type="button"
@@ -243,36 +257,63 @@ export function ItemCharacteristicsExplorer() {
                       <SortIcon column="color" />
                     </button>
                   </th>
+                  <th className="border-b border-slate-200 px-3 py-2 font-semibold text-slate-800">Código</th>
+                  <th className="border-b border-slate-200 px-3 py-2 font-semibold text-slate-800">Precio</th>
+                  <th className="border-b border-slate-200 px-3 py-2 font-semibold text-slate-800">Activo</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={3} className="px-4 py-12 text-center text-slate-500">
+                    <td colSpan={7} className="px-4 py-12 text-center text-slate-500">
                       <Loader2 className="mx-auto h-8 w-8 animate-spin text-slate-400" />
                     </td>
                   </tr>
                 ) : error ? (
                   <tr>
-                    <td colSpan={3} className="px-4 py-8 text-center text-red-600">
+                    <td colSpan={7} className="px-4 py-8 text-center text-red-600">
                       {error}
                     </td>
                   </tr>
                 ) : pageRows.length === 0 ? (
                   <tr>
-                    <td colSpan={3} className="px-4 py-8 text-center text-slate-500">
+                    <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
                       Sin resultados
                     </td>
                   </tr>
                 ) : (
                   pageRows.map((r, idx) => (
                     <tr
-                      key={`${r.clase}|${r.categoria}|${r.color}|${idx}`}
+                      key={`${r.codigo}|${idx}`}
                       className="border-b border-slate-100 hover:bg-slate-50/80"
                     >
+                      <td className="px-3 py-2 text-slate-800">{r.nombreVitrina}</td>
                       <td className="px-3 py-2 text-slate-800">{r.clase}</td>
                       <td className="px-3 py-2 text-slate-700">{r.categoria}</td>
                       <td className="px-3 py-2 text-slate-700">{r.color}</td>
+                      <td className="px-3 py-2 font-mono text-xs text-slate-600">{r.codigo}</td>
+                      <td className="px-3 py-2">
+                        <span
+                          className={
+                            r.tienePrecio
+                              ? "rounded bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700"
+                              : "rounded bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700"
+                          }
+                        >
+                          {r.tienePrecio ? "Sí" : "No"}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2">
+                        <span
+                          className={
+                            r.activo
+                              ? "text-emerald-700"
+                              : "text-slate-400"
+                          }
+                        >
+                          {r.activo ? "Sí" : "No"}
+                        </span>
+                      </td>
                     </tr>
                   ))
                 )}
