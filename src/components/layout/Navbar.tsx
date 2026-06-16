@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Menu, Search, ShoppingBag, X } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { NavMegaMenu } from "@/components/layout/NavMegaMenu";
@@ -22,8 +22,14 @@ const NAV_LOGO_SRC = "/icons/LOGOS-03.svg";
 export function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const claseParam = searchParams.get("clase");
+  const [search, setSearch] = useState("");
+  useEffect(() => {
+    setSearch(typeof window !== "undefined" ? window.location.search : "");
+  }, [pathname]);
+  const claseParam = useMemo(
+    () => (search ? new URLSearchParams(search).get("clase") : null),
+    [search],
+  );
 
   const { openCart, itemCount } = useCart();
   const headerRef = useRef<HTMLElement>(null);
@@ -50,7 +56,7 @@ export function Navbar() {
 
   useEffect(() => {
     closeMenus();
-  }, [pathname, searchParams, closeMenus]);
+  }, [pathname, search, closeMenus]);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
