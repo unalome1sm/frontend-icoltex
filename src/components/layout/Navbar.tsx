@@ -91,10 +91,41 @@ export function Navbar() {
 
   return (
     <header ref={headerRef} className="relative w-full overflow-visible border-b border-slate-200 bg-white">
-      <div className="flex w-full items-center justify-between gap-3 overflow-visible px-4 py-4 sm:gap-4 sm:px-6 lg:px-8">
+      <div className="relative flex w-full items-center justify-between gap-3 overflow-visible px-4 py-4 sm:gap-4 sm:px-6 lg:px-8">
+        {/* Izquierda: hamburger (móvil) + logo (desktop) */}
+        <div className="flex min-w-9 shrink-0 items-center justify-start lg:min-w-0">
+          <button
+            type="button"
+            onClick={() => setMobileOpen((o) => !o)}
+            className="flex h-9 w-9 items-center justify-center text-slate-700 lg:hidden"
+            aria-expanded={mobileOpen}
+            aria-label={mobileOpen ? "Cerrar menú" : "Abrir menú"}
+          >
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+
+          <Link
+            href="/"
+            className="m-0 hidden shrink-0 items-center justify-start overflow-visible p-0 leading-none outline-offset-2 [-webkit-tap-highlight-color:transparent] lg:flex -ml-4 sm:-ml-6 lg:-ml-8"
+            aria-label="Icoltex - Inicio"
+            onClick={closeMenus}
+          >
+            <Image
+              src={NAV_LOGO_SRC}
+              alt="Icoltex"
+              width={1920}
+              height={1080}
+              className="m-0 block h-11 w-auto max-h-11 object-contain object-left p-0 max-w-[17rem] lg:max-w-[20rem]"
+              priority
+              unoptimized
+            />
+          </Link>
+        </div>
+
+        {/* Centro: logo compacto (móvil) */}
         <Link
           href="/"
-          className="m-0 flex shrink-0 items-center justify-start overflow-visible p-0 leading-none outline-offset-2 [-webkit-tap-highlight-color:transparent] -ml-4 sm:-ml-6 lg:-ml-8"
+          className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center lg:hidden"
           aria-label="Icoltex - Inicio"
           onClick={closeMenus}
         >
@@ -103,7 +134,7 @@ export function Navbar() {
             alt="Icoltex"
             width={1920}
             height={1080}
-            className="m-0 block h-11 w-auto max-h-11 object-contain object-left p-0 max-w-[min(60vw,14rem)] sm:max-w-[min(54vw,16rem)] md:max-w-[17rem] lg:max-w-[20rem]"
+            className="h-9 w-auto max-h-9 max-w-[10rem] object-contain object-center"
             priority
             unoptimized
           />
@@ -155,7 +186,7 @@ export function Navbar() {
           })}
         </nav>
 
-        {/* Búsqueda + bolsa + hamburger móvil */}
+        {/* Búsqueda (desktop) + bolsa */}
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <form onSubmit={handleSearchSubmit} className="relative hidden w-40 sm:block sm:w-48">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
@@ -181,16 +212,6 @@ export function Navbar() {
                 {itemCount > 99 ? "99+" : itemCount}
               </span>
             )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setMobileOpen((o) => !o)}
-            className="flex h-9 w-9 items-center justify-center text-slate-700 lg:hidden"
-            aria-expanded={mobileOpen}
-            aria-label={mobileOpen ? "Cerrar menú" : "Abrir menú"}
-          >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </div>

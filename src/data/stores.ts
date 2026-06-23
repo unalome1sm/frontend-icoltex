@@ -21,7 +21,7 @@ export const STORES: Store[] = [
     city: "bogota",
     googleMapsUrl: "https://share.google/gIqpy1U9cUnRvW5TD",
     videoGuideUrl:
-      "https://drive.google.com/file/d/1P3jVcNkFPCISrxzSF991FIjrE4UcR91b/preview",
+      "https://drive.google.com/file/d/1sz0QD5MuJUT8_pJdWNE_07UTeP_SyHqx/preview",
   },
   {
     id: "bogota-alqueria-2",

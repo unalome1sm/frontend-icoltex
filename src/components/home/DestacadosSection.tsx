@@ -83,11 +83,11 @@ export function DestacadosSection() {
         <>
           {/* Carrusel solo en mobile: scroll horizontal con snap */}
           <div className="sm:hidden -mx-2 overflow-x-auto overscroll-x-contain px-5 pb-2 snap-x snap-mandatory">
-            <div className="flex gap-[10px]">
+            <div className="flex items-stretch gap-[10px]">
               {products.map((product) => (
                 <div
                   key={product.id}
-                  className="w-[75vw] max-w-[320px] flex-shrink-0 snap-start"
+                  className="flex w-[75vw] max-w-[320px] flex-shrink-0 snap-start self-stretch"
                 >
                   <ProductCard product={product} />
                 </div>

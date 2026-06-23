@@ -32,7 +32,7 @@ export function ProductCard({ product, variant = "default" }: Props) {
   return (
     <Link
       href={detailHref}
-      className="group flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-md"
+      className="group flex h-full w-full flex-col overflow-hidden rounded-lg border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-md"
     >
       <div className="relative aspect-square w-full overflow-hidden bg-slate-100">
         {imageUrl ? (
@@ -61,19 +61,30 @@ export function ProductCard({ product, variant = "default" }: Props) {
           </span>
         </div>
       )}
-      <div className="flex flex-col gap-0.5 p-3">
-        <h3 className="font-semibold text-slate-900">{product.nombre}</h3>
-        {product.descripcion && (
-          <p className={`text-slate-600 ${isRelated ? "text-sm" : "text-sm"}`}>{product.descripcion}</p>
-        )}
-        {!isRelated && (
+      <div className="flex min-h-[6.75rem] flex-1 flex-col gap-0.5 p-3">
+        <h3 className="line-clamp-2  font-semibold leading-tight text-slate-900">
+          {product.nombre}
+        </h3>
+        {isRelated ? (
+          product.descripcion && (
+            <p className="text-sm text-slate-600">{product.descripcion}</p>
+          )
+        ) : (
           <>
-            <p className="text-xs text-slate-500">{colorLabel}</p>
-            {product.precioMetro != null && (
-              <p className="text-sm font-medium text-slate-900">
-                ${product.precioMetro.toLocaleString("es-CO")} / m
-              </p>
-            )}
+            <p
+              className={`line-clamp-1 min-h-5 text-sm leading-5 text-slate-600 ${
+                product.descripcion ? "" : "invisible"
+              }`}
+              aria-hidden={!product.descripcion}
+            >
+              {product.descripcion || "—"}
+            </p>
+            <p className="min-h-4 text-xs leading-4 text-slate-500">{colorLabel}</p>
+            <p className="min-h-5 text-sm leading-5 font-medium text-slate-900">
+              {product.precioMetro != null
+                ? `$${product.precioMetro.toLocaleString("es-CO")} / m`
+                : "—"}
+            </p>
           </>
         )}
       </div>
