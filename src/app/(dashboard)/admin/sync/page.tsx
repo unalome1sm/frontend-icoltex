@@ -27,25 +27,35 @@ export default function AdminSyncPage() {
     <div className="rounded-lg border border-slate-200 bg-white p-6">
       <h2 className="mb-4 text-base font-semibold text-slate-900">Sincronizar datos</h2>
       <p className="mb-6 text-sm text-slate-600">
-        Para la tienda: sincroniza <strong>Productos</strong> (precios desde items_icoltex) y{" "}
-        <strong>Catálogo vitrina</strong> (estructura desde caracterisiticas_items_icoltex).
+        Catálogo de tienda: sincroniza <strong>Catálogo completo</strong> (recomendado) o por partes —
+        <strong> Vitrina</strong> desde <code className="text-xs">info-items-x-ref</code> (grupos, variantes,
+        imágenes de línea) y <strong>Productos</strong> desde <code className="text-xs">items_icoltex</code>{' '}
+        (precios, imágenes por SKU, recomendaciones).
       </p>
       <div className="flex flex-wrap gap-3">
+        <button
+          type="button"
+          onClick={() => runSync('catalog-full')}
+          disabled={!!loading}
+          className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+        >
+          {loading === 'catalog-full' ? 'Sincronizando...' : 'Catálogo completo'}
+        </button>
+        <button
+          type="button"
+          onClick={() => runSync('catalog-vitrina')}
+          disabled={!!loading}
+          className="rounded-lg border border-red-600 bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+        >
+          {loading === 'catalog-vitrina' ? 'Sincronizando...' : 'Solo vitrina'}
+        </button>
         <button
           type="button"
           onClick={() => runSync('products')}
           disabled={!!loading}
           className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
         >
-          {loading === 'products' ? 'Sincronizando...' : 'Productos (precios)'}
-        </button>
-        <button
-          type="button"
-          onClick={() => runSync('catalog-vitrina')}
-          disabled={!!loading}
-          className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
-        >
-          {loading === 'catalog-vitrina' ? 'Sincronizando...' : 'Catálogo vitrina'}
+          {loading === 'products' ? 'Sincronizando...' : 'Solo productos (precios)'}
         </button>
         <button
           type="button"

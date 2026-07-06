@@ -1,4 +1,3 @@
-import { getApiUrl } from "./api";
 
 export type ProductCardData = {
   id: string;
@@ -19,9 +18,47 @@ export type ProductResponse = {
   imageUrls?: string[];
 };
 
+const PROXY_PATH = "/api/images/proxy";
+
+function isDriveImageUrl(url: string): boolean {
+  return (
+    url.includes("drive.google.com") || url.includes("lh3.googleusercontent.com")
+  );
+}
+
+/** Normaliza URLs ya proxied (absolutas o relativas) a ruta relativa same-origin. */
+function normalizeProxiedImageUrl(url: string): string | null {
+  if (!url.includes(PROXY_PATH)) return null;
+  if (url.startsWith(`${PROXY_PATH}?`)) return url;
+  try {
+    const parsed = new URL(url);
+    if (parsed.pathname.endsWith(PROXY_PATH) || parsed.pathname.includes(`${PROXY_PATH}`)) {
+      return `${parsed.pathname}${parsed.search}`;
+    }
+  } catch {
+    const idx = url.indexOf(PROXY_PATH);
+    if (idx >= 0) return url.slice(idx);
+  }
+  return null;
+}
+
+function buildProxiedImageUrl(directUrl: string): string {
+  return `${PROXY_PATH}?url=${encodeURIComponent(directUrl)}`;
+}
+
 export function toDirectImageUrl(url: string): string {
   const t = url.trim();
   if (!t) return "";
+  const proxied = normalizeProxiedImageUrl(t);
+  if (proxied) {
+    try {
+      const params = new URL(proxied, "http://local").searchParams;
+      const inner = params.get("url");
+      if (inner) return inner;
+    } catch {
+      /* keep original */
+    }
+  }
   if (/drive\.google\.com\/uc\?export=view&id=/.test(t)) return t;
   const file = t.match(/drive\.google\.com\/file\/d\/([^/]+)/);
   if (file) return `https://drive.google.com/uc?export=view&id=${file[1]}`;
@@ -32,19 +69,22 @@ export function toDirectImageUrl(url: string): string {
 
 export function getImageDisplayUrl(directUrl: string): string {
   if (!directUrl) return "";
-  if (
-    directUrl.includes("drive.google.com") ||
-    directUrl.includes("lh3.googleusercontent.com")
-  ) {
-    return getApiUrl(`/api/images/proxy?url=${encodeURIComponent(directUrl)}`);
+  const proxied = normalizeProxiedImageUrl(directUrl);
+  if (proxied) return proxied;
+  if (isDriveImageUrl(directUrl)) {
+    return buildProxiedImageUrl(directUrl);
   }
   return directUrl;
 }
 
-export function toProductCardData(p: ProductResponse): ProductCardData {
-  const imageUrls = (p.imageUrls ?? [])
+export function mapImageUrlsForDisplay(urls: string[]): string[] {
+  return urls
     .map((u) => getImageDisplayUrl(toDirectImageUrl(u)))
     .filter(Boolean);
+}
+
+export function toProductCardData(p: ProductResponse): ProductCardData {
+  const imageUrls = mapImageUrlsForDisplay(p.imageUrls ?? []);
   return {
     id: p._id,
     nombre: p.nombre,

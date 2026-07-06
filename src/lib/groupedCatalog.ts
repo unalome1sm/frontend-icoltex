@@ -1,6 +1,12 @@
-import { getApiUrl } from "@/lib/api";
+import { apiFetch, getApiUrl } from "@/lib/api";
 import type { ProductCardData } from "@/components/shop/ProductCard";
-import { getImageDisplayUrl, toDirectImageUrl } from "@/lib/products";
+import { mapImageUrlsForDisplay } from "@/lib/products";
+
+export type CatalogVitrinaFiltros = {
+  filtro1: string[];
+  filtro2: string[];
+  filtro3: string[];
+};
 
 export type GroupedProductVariant = {
   mongoId: string;
@@ -17,6 +23,7 @@ export type GroupedProductVariant = {
   recomendacionesUsos?: string;
   recomendacionesCuidados?: string;
   unidadMedida?: string;
+  tienePrecio?: boolean;
 };
 
 export type GroupedProductRow = {
@@ -25,9 +32,13 @@ export type GroupedProductRow = {
   nombreVitrina: string;
   claseFamilia?: string;
   categoria?: string;
+  imageUrls?: string[];
+  filtros?: CatalogVitrinaFiltros[];
   variantes: GroupedProductVariant[];
   precioDesde?: number;
   variantCount: number;
+  esDestacado?: boolean;
+  esNovedad?: boolean;
 };
 
 export type CatalogSortOption = "relevance" | "price-asc" | "price-desc" | "name";
@@ -45,6 +56,8 @@ export type GroupedProductsQuery = {
   precioMax?: number;
   inStock?: boolean;
   sort?: CatalogSortOption;
+  destacado?: boolean;
+  novedad?: boolean;
 };
 
 export type GroupedProductsResponse = {
@@ -58,6 +71,31 @@ function variantDisplayPrice(v: GroupedProductVariant): number | undefined {
   const isKg = v.unidadMedida?.toUpperCase() === "KG";
   if (isKg) return v.precioKilos ?? v.precioMetro;
   return v.precioMetro ?? v.precioKilos;
+}
+
+/** Primera URL de imagen del grupo o de sus variantes (raw Drive URLs). */
+export function resolveGroupThumbnailUrl(row: GroupedProductRow): string | undefined {
+  if (row.imageUrls?.[0]) return row.imageUrls[0];
+  for (const v of row.variantes) {
+    if (v.imageUrls?.[0]) return v.imageUrls[0];
+  }
+  return undefined;
+}
+
+/** Badge de origen de imágenes para listado admin. */
+export function groupImageSourceLabel(row: GroupedProductRow): "grupo" | "sku" | "ninguna" {
+  if (row.imageUrls?.length) return "grupo";
+  if (row.variantes.some((v) => v.imageUrls?.length)) return "sku";
+  return "ninguna";
+}
+
+export function formatGroupedPrice(value?: number): string {
+  if (value == null || Number.isNaN(value)) return "—";
+  return `$${value.toLocaleString("es-CO")}`;
+}
+
+export function variantDisplayPriceForRow(v: GroupedProductVariant): number | undefined {
+  return variantDisplayPrice(v);
 }
 
 const MONGO_ID_RE = /^[a-f\d]{24}$/i;
@@ -83,6 +121,8 @@ export async function fetchGroupedProductsPage(
   if (params.precioMax != null) sp.set("precioMax", String(params.precioMax));
   if (params.inStock) sp.set("inStock", "true");
   if (params.sort && params.sort !== "relevance") sp.set("sort", params.sort);
+  if (params.destacado) sp.set("destacado", "true");
+  if (params.novedad) sp.set("novedad", "true");
   const q = sp.toString();
   const res = await fetch(getApiUrl(`/api/catalog/grouped-products${q ? `?${q}` : ""}`));
   const data = (await res.json()) as GroupedProductsResponse;
@@ -99,10 +139,9 @@ export async function fetchGroupedProductByGroupId(groupId: string): Promise<Gro
 
 export function groupedRowToCardData(row: GroupedProductRow): ProductCardData {
   const first = row.variantes[0];
-  const rawUrls = first?.imageUrls ?? [];
-  const imageUrls = rawUrls
-    .map((u) => getImageDisplayUrl(toDirectImageUrl(u)))
-    .filter(Boolean);
+  const thumb = resolveGroupThumbnailUrl(row);
+  const rawUrls = row.imageUrls?.length ? row.imageUrls : thumb ? [thumb] : [];
+  const imageUrls = mapImageUrlsForDisplay(rawUrls);
   const colores = row.variantes.map((v) => v.colorLabel).join(",");
   const precio = row.precioDesde ?? (first ? variantDisplayPrice(first) : undefined);
 
@@ -114,5 +153,69 @@ export function groupedRowToCardData(row: GroupedProductRow): ProductCardData {
     precioMetro: precio,
     colores: colores || undefined,
     imageUrls: imageUrls.length ? imageUrls : undefined,
+    isNew: row.esNovedad === true,
   };
+}
+
+export async function updateGroupMerchandising(
+  groupId: string,
+  input: { esDestacado?: boolean; esNovedad?: boolean },
+): Promise<GroupedProductRow> {
+  return apiFetch<GroupedProductRow>(
+    `/api/catalog/grouped-products/${encodeURIComponent(groupId)}/merchandising`,
+    { method: "PATCH", body: input },
+  );
+}
+
+const RELATED_MIN_BEFORE_FALLBACK = 4;
+const RELATED_FETCH_LIMIT = 40;
+
+function excludeCurrentGroup(
+  groups: GroupedProductRow[],
+  currentGroupId: string,
+): GroupedProductRow[] {
+  return groups.filter((g) => g.groupId !== currentGroupId);
+}
+
+/** Productos relacionados para detalle agrupado: categoría → clase → catálogo amplio. */
+export async function fetchRelatedGroupCards(
+  current: GroupedProductRow,
+  limit = 8,
+): Promise<ProductCardData[]> {
+  let candidates: GroupedProductRow[] = [];
+
+  if (current.categoria) {
+    const byCategory = await fetchGroupedProductsPage({
+      category: current.categoria,
+      limit: RELATED_FETCH_LIMIT,
+      page: 1,
+    });
+    candidates = excludeCurrentGroup(byCategory.groups ?? [], current.groupId);
+    if (candidates.length >= RELATED_MIN_BEFORE_FALLBACK) {
+      return candidates.slice(0, limit).map(groupedRowToCardData);
+    }
+  }
+
+  if (current.claseFamilia) {
+    const byClass = await fetchGroupedProductsPage({
+      classFamily: current.claseFamilia,
+      limit: RELATED_FETCH_LIMIT,
+      page: 1,
+    });
+    const classList = excludeCurrentGroup(byClass.groups ?? [], current.groupId);
+    if (classList.length > candidates.length) {
+      candidates = classList;
+    }
+    if (candidates.length >= RELATED_MIN_BEFORE_FALLBACK) {
+      return candidates.slice(0, limit).map(groupedRowToCardData);
+    }
+  }
+
+  if (candidates.length > 0) {
+    return candidates.slice(0, limit).map(groupedRowToCardData);
+  }
+
+  const all = await fetchGroupedProductsPage({ limit: RELATED_FETCH_LIMIT, page: 1 });
+  candidates = excludeCurrentGroup(all.groups ?? [], current.groupId);
+  return candidates.slice(0, limit).map(groupedRowToCardData);
 }

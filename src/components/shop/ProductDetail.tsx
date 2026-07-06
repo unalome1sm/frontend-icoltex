@@ -8,6 +8,9 @@ import { ProductAccordion } from "./ProductAccordion";
 import { ProductCard } from "./ProductCard";
 import type { ProductCardData } from "./ProductCard";
 import { useCart } from "@/contexts/CartContext";
+import { mapImageUrlsForDisplay } from "@/lib/products";
+import { ColorSwatchButton } from "./ColorSwatchButton";
+import { ProductReviewsSection } from "./ProductReviewsSection";
 
 export type ProductDetailData = {
   id: string;
@@ -49,6 +52,8 @@ type Props = {
   variantes?: ProductVariantOption[];
   /** Clave estable (ej. groupId) para resetear la variante al cambiar de producto agrupado. */
   variantesGroupId?: string;
+  /** Imágenes de línea del grupo vitrina (fallback si la variante no tiene SKU). */
+  groupImageUrls?: string[];
 };
 
 const MEASURE_OPTIONS = [
@@ -62,22 +67,12 @@ function parseColors(colores?: string): string[] {
   return colores.split(/[,;]/).map((c) => c.trim()).filter(Boolean);
 }
 
-/** Mapeo simple de nombre de color a clase de fondo (placeholder) */
-function colorToBg(name: string): string {
-  const n = name.toLowerCase();
-  if (n.includes("azul") && n.includes("marino")) return "bg-blue-900";
-  if (n.includes("negro")) return "bg-gray-900";
-  if (n.includes("rojo")) return "bg-red-600";
-  if (n.includes("verde")) return "bg-green-600";
-  if (n.includes("azul")) return "bg-blue-500";
-  if (n.includes("morado") || n.includes("púrpura")) return "bg-purple-600";
-  if (n.includes("naranja")) return "bg-orange-500";
-  if (n.includes("amarillo")) return "bg-yellow-400";
-  if (n.includes("rosa")) return "bg-pink-400";
-  return "bg-slate-400";
-}
-
-function variantToDetail(v: ProductVariantOption): ProductDetailData {
+function variantToDetail(
+  v: ProductVariantOption,
+  groupImageUrls?: string[],
+): ProductDetailData {
+  const sourceUrls = v.imageUrls?.length ? v.imageUrls : (groupImageUrls ?? []);
+  const imageUrls = mapImageUrlsForDisplay(sourceUrls);
   return {
     id: v.mongoId,
     nombre: v.itemNameCompleto,
@@ -85,7 +80,7 @@ function variantToDetail(v: ProductVariantOption): ProductDetailData {
     stock: v.stock,
     precioMetro: v.precioMetro,
     precioKilos: v.precioKilos,
-    imageUrls: v.imageUrls,
+    imageUrls: imageUrls.length ? imageUrls : undefined,
     colores: v.colorLabel,
     caracteristica: v.caracteristica,
     recomendacionesUsos: v.recomendacionesUsos,
@@ -100,6 +95,7 @@ export function ProductDetail({
   tituloVitrina,
   variantes,
   variantesGroupId,
+  groupImageUrls,
 }: Props) {
   const { addItem } = useCart();
   const [measure, setMeasure] = useState<"metro" | "rollo" | "peso">("metro");
@@ -125,7 +121,7 @@ export function ProductDetail({
 
   const displayProduct: ProductDetailData = useMemo(() => {
     if (activeVariant) {
-      const d = variantToDetail(activeVariant);
+      const d = variantToDetail(activeVariant, groupImageUrls);
       return {
         ...d,
         categoria: product.categoria,
@@ -133,7 +129,7 @@ export function ProductDetail({
       };
     }
     return product;
-  }, [activeVariant, product]);
+  }, [activeVariant, product, groupImageUrls]);
 
   const heading = tituloVitrina ?? displayProduct.nombre;
   const colors = hasVariantes && variantes
@@ -278,22 +274,19 @@ export function ProductDetail({
               </p>
               <div className="flex flex-wrap items-center gap-2">
                 {colors.map((color, idx) => (
-                  <button
+                  <ColorSwatchButton
                     key={`${color}-${idx}`}
-                    type="button"
+                    color={color}
+                    selected={
+                      selectedColor === color || (!selectedColor && color === colors[0])
+                    }
                     onClick={() => {
                       setSelectedColor(color);
                       if (hasVariantes && variantes) {
-                        const idx = variantes.findIndex((v) => v.colorLabel === color);
-                        if (idx >= 0) setVariantIndex(idx);
+                        const vIdx = variantes.findIndex((v) => v.colorLabel === color);
+                        if (vIdx >= 0) setVariantIndex(vIdx);
                       }
                     }}
-                    title={color}
-                    className={`h-8 w-8 rounded-full border-2 transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ${
-                      selectedColor === color || (!selectedColor && color === colors[0])
-                        ? "border-slate-900 ring-2 ring-slate-900 ring-offset-2"
-                        : "border-slate-200 hover:border-slate-400"
-                    } ${colorToBg(color)}`}
                   />
                 ))}
                 <span className="ml-1 flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-400">
@@ -337,14 +330,14 @@ export function ProductDetail({
                 {displayProduct.recomendacionesCuidados || "Sin recomendaciones especificadas."}
               </p>
             </ProductAccordion>
-            <ProductAccordion title="Evaluaciones (0)">
-              <p className="text-slate-600">Aún no hay evaluaciones. Sé el primero en opinar.</p>
-              <div className="mt-2 flex gap-0.5 text-slate-300" aria-hidden>
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <span key={i} className="text-lg">★</span>
-                ))}
-              </div>
-            </ProductAccordion>
+            {variantesGroupId && (
+              <ProductReviewsSection
+                groupId={variantesGroupId}
+                productName={heading}
+                productImageUrl={images[0]}
+                productPrice={displayProduct.precioMetro ?? 0}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -364,7 +357,7 @@ export function ProductDetail({
                     key={p.id}
                     className="w-[75vw] max-w-[320px] flex-shrink-0 snap-start"
                   >
-                    <ProductCard product={{ ...p, isNew: true }} variant="related" />
+                    <ProductCard product={p} variant="related" />
                   </div>
                 ))}
               </div>
@@ -373,7 +366,7 @@ export function ProductDetail({
             {/* Grid desde sm en adelante */}
             <div className="hidden sm:grid grid-cols-2 gap-6 lg:grid-cols-4">
               {relatedProducts.map((p) => (
-                <ProductCard key={p.id} product={{ ...p, isNew: true }} variant="related" />
+                <ProductCard key={p.id} product={p} variant="related" />
               ))}
             </div>
           </>

@@ -45,6 +45,12 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
+    localPatterns: [
+      {
+        pathname: "/api/images/proxy",
+        // Sin `search`: permite ?url=... del proxy de Drive
+      },
+    ],
     remotePatterns: [
       {
         protocol: 'https',
@@ -58,6 +64,31 @@ const nextConfig: NextConfig = {
         pathname: '/**',
         search: '',
       },
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
+        pathname: '/api/images/proxy',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        pathname: '/api/images/proxy',
+      },
+      ...(() => {
+        try {
+          const u = new URL(backendBase);
+          if (u.hostname === '127.0.0.1' || u.hostname === 'localhost') return [];
+          return [
+            {
+              protocol: u.protocol.replace(':', '') as 'http' | 'https',
+              hostname: u.hostname,
+              pathname: '/api/images/proxy',
+            },
+          ];
+        } catch {
+          return [];
+        }
+      })(),
     ],
   },
 };

@@ -6,8 +6,8 @@ import { LayoutDashboard, Package, RefreshCw, Users, Shield, Store, LogOut, Imag
 
 const navItems = [
   { href: '/admin', label: 'Inicio', icon: LayoutDashboard },
-  { href: '/admin/products', label: 'Productos', icon: Package },
-  { href: '/admin/productos-explorador', label: 'Explorador tabla', icon: Table2 },
+  { href: '/admin/products', label: 'Catálogo vitrina', icon: Package },
+  { href: '/admin/productos-explorador', label: 'SKUs (items_icoltex)', icon: Table2 },
   { href: '/admin/caracteristicas-explorador', label: 'Características (colores)', icon: Palette },
   { href: '/admin/galleries', label: 'Galerías por línea', icon: Images },
   { href: '/admin/sync', label: 'Sincronizar', icon: RefreshCw },

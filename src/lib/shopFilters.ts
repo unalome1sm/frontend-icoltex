@@ -1,5 +1,6 @@
 import { getApiUrl } from "@/lib/api";
 import type { CatalogSortOption } from "@/lib/groupedCatalog";
+import { auditColorLabels, type ColorAuditEntry } from "@/lib/colorSwatches";
 
 export type CatalogFilterMeta = {
   clases: string[];
@@ -86,6 +87,15 @@ export async function fetchCatalogFilterMeta(): Promise<CatalogFilterMeta> {
   const data = (await res.json()) as CatalogFilterMeta & { error?: string };
   if (!res.ok) throw new Error(data.error ?? "Error al cargar filtros");
   return data;
+}
+
+/** Audita colorLabels del catálogo: cuáles tienen swatch mapeado vs fallback hash. */
+export async function fetchColorLabelAudit(): Promise<{
+  mapped: ColorAuditEntry[];
+  unmapped: ColorAuditEntry[];
+}> {
+  const meta = await fetchCatalogFilterMeta();
+  return auditColorLabels(meta.colores);
 }
 
 export function categoriasForClase(

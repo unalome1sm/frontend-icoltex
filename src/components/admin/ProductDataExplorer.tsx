@@ -166,12 +166,15 @@ export function ProductDataExplorer() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-slate-900">
-          Explorador de datos de productos
+          SKUs (items_icoltex)
         </h1>
         <p className="mt-1 text-sm text-slate-600">
-          Tabla para revisar cómo vienen los ítems del API (una fila por SKU / variante).
-          El orden de columnas es solo en esta página cargada; el servidor ordena por{" "}
-          <code className="rounded bg-slate-100 px-1">nombre</code>.
+          Tabla plana para revisar cada SKU del sync SAP (una fila por ítem). Para el catálogo
+          agrupado como en la tienda, usa{" "}
+          <a href="/admin/products" className="font-medium text-slate-900 underline">
+            Catálogo vitrina
+          </a>
+          .
         </p>
       </div>
 

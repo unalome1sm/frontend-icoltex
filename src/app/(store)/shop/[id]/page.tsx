@@ -9,12 +9,12 @@ import type { ProductDetailData, ProductVariantOption } from "@/components/shop/
 import type { ProductCardData } from "@/components/shop/ProductCard";
 import {
   fetchGroupedProductByGroupId,
-  groupedRowToCardData,
+  fetchRelatedGroupCards,
   isMongoObjectId,
   type GroupedProductRow,
   type GroupedProductVariant,
 } from "@/lib/groupedCatalog";
-import { getImageDisplayUrl, toDirectImageUrl } from "@/lib/products";
+import { mapImageUrlsForDisplay } from "@/lib/products";
 
 type ProductResponse = {
   _id: string;
@@ -34,7 +34,7 @@ type ProductResponse = {
 };
 
 function toDetailData(p: ProductResponse): ProductDetailData {
-  const imageUrls = (p.imageUrls ?? []).map((u) => getImageDisplayUrl(toDirectImageUrl(u))).filter(Boolean);
+  const imageUrls = mapImageUrlsForDisplay(p.imageUrls ?? []);
   return {
     id: p._id,
     nombre: p.nombre,
@@ -54,7 +54,7 @@ function toDetailData(p: ProductResponse): ProductDetailData {
 }
 
 function toCardData(p: ProductResponse): ProductCardData {
-  const imageUrls = (p.imageUrls ?? []).map((u) => getImageDisplayUrl(toDirectImageUrl(u))).filter(Boolean);
+  const imageUrls = mapImageUrlsForDisplay(p.imageUrls ?? []);
   return {
     id: p._id,
     nombre: p.nombre,
@@ -66,7 +66,8 @@ function toCardData(p: ProductResponse): ProductCardData {
 }
 
 function mapVariantToDetail(v: GroupedProductVariant, group: GroupedProductRow): ProductDetailData {
-  const imageUrls = (v.imageUrls ?? []).map((u) => getImageDisplayUrl(toDirectImageUrl(u))).filter(Boolean);
+  const sourceUrls = v.imageUrls?.length ? v.imageUrls : (group.imageUrls ?? []);
+  const imageUrls = mapImageUrlsForDisplay(sourceUrls);
   return {
     id: v.mongoId,
     nombre: v.itemNameCompleto,
@@ -102,9 +103,38 @@ function toVariantOptions(rows: GroupedProductVariant[]): ProductVariantOption[]
   }));
 }
 
+async function fetchRelatedSkuCards(
+  current: ProductDetailData,
+  limit = 8,
+): Promise<ProductCardData[]> {
+  const excludeId = current.id;
+
+  async function fromQuery(params: URLSearchParams): Promise<ProductCardData[]> {
+    const res = await fetch(getApiUrl(`/api/products?${params}`));
+    const data = (await res.json()) as { products?: ProductResponse[] };
+    return (data.products ?? [])
+      .filter((p) => p._id !== excludeId)
+      .slice(0, limit)
+      .map(toCardData);
+  }
+
+  if (current.categoria) {
+    const byCategory = new URLSearchParams();
+    byCategory.set("category", current.categoria);
+    byCategory.set("limit", "12");
+    const list = await fromQuery(byCategory);
+    if (list.length > 0) return list;
+  }
+
+  const fallback = new URLSearchParams();
+  fallback.set("limit", "20");
+  return fromQuery(fallback);
+}
+
 export default function ShopProductPage() {
   const params = useParams();
   const id = typeof params?.id === "string" ? params.id : "";
+  const isGroupRoute = id ? !isMongoObjectId(id) : false;
   const [product, setProduct] = useState<ProductDetailData | null>(null);
   const [grouped, setGrouped] = useState<GroupedProductRow | null>(null);
   const [related, setRelated] = useState<ProductCardData[]>([]);
@@ -119,7 +149,9 @@ export default function ShopProductPage() {
     }
     setLoading(true);
     setError("");
+    setProduct(null);
     setGrouped(null);
+    setRelated([]);
 
     if (isMongoObjectId(id)) {
       fetch(getApiUrl(`/api/products/${id}`))
@@ -144,74 +176,27 @@ export default function ShopProductPage() {
   }, [id]);
 
   useEffect(() => {
-    if (!product?.id) {
-      setRelated([]);
-      return;
+    if (!id || loading || !product) return;
+    if (isGroupRoute && !grouped) return;
+
+    let cancelled = false;
+
+    async function loadRelated() {
+      try {
+        const list = isGroupRoute
+          ? await fetchRelatedGroupCards(grouped!, 8)
+          : await fetchRelatedSkuCards(product!, 8);
+        if (!cancelled) setRelated(list);
+      } catch {
+        if (!cancelled) setRelated([]);
+      }
     }
 
-    if (grouped) {
-      const sp = new URLSearchParams();
-      if (grouped.categoria) sp.set("category", grouped.categoria);
-      sp.set("limit", "40");
-      fetch(getApiUrl(`/api/catalog/grouped-products?${sp}`))
-        .then((r) => r.json())
-        .then((data: { groups?: GroupedProductRow[] }) => {
-          const list = (data.groups ?? [])
-            .filter((g) => g.groupId !== grouped.groupId)
-            .slice(0, 8)
-            .map(groupedRowToCardData);
-          setRelated(list);
-        })
-        .catch(() => setRelated([]));
-      return;
-    }
-
-    const byCategory = new URLSearchParams();
-    if (product.categoria) byCategory.set("category", product.categoria);
-    byCategory.set("limit", "12");
-
-    fetch(getApiUrl(`/api/products?${byCategory}`))
-      .then((res) => res.json())
-      .then((data: { products?: ProductResponse[] }) => {
-        const list = data.products ?? [];
-        let relatedList = list
-          .filter((p) => p._id !== product.id)
-          .slice(0, 8)
-          .map(toCardData);
-
-        if (relatedList.length >= 8) return Promise.resolve(relatedList);
-
-        return fetch(getApiUrl("/api/products?limit=20"))
-          .then((r) => r.json())
-          .then((d: { products?: ProductResponse[] }) => {
-            const all = (d.products ?? []).map(toCardData);
-            const ids = new Set(relatedList.map((x) => x.id));
-            for (const p of all) {
-              if (relatedList.length >= 8) break;
-              if (p.id !== product.id && !ids.has(p.id)) {
-                ids.add(p.id);
-                relatedList.push(p);
-              }
-            }
-            return relatedList;
-          })
-          .catch(() => relatedList);
-      })
-      .then(setRelated)
-      .catch(() => {
-        fetch(getApiUrl("/api/products?limit=9"))
-          .then((res) => res.json())
-          .then((data: { products?: ProductResponse[] }) => {
-            const list = data.products ?? [];
-            const relatedList = list
-              .filter((p) => p._id !== product.id)
-              .slice(0, 8)
-              .map(toCardData);
-            setRelated(relatedList);
-          })
-          .catch(() => setRelated([]));
-      });
-  }, [product?.id, product?.categoria, grouped]);
+    loadRelated();
+    return () => {
+      cancelled = true;
+    };
+  }, [id, isGroupRoute, loading, product, grouped?.groupId]);
 
   if (loading && !product) {
     return (
@@ -253,6 +238,7 @@ export default function ShopProductPage() {
       tituloVitrina={grouped ? grouped.nombreVitrina : undefined}
       variantes={grouped ? toVariantOptions(grouped.variantes) : undefined}
       variantesGroupId={grouped?.groupId}
+      groupImageUrls={grouped?.imageUrls}
     />
   );
 }
