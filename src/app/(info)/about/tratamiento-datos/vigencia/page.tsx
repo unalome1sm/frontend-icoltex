@@ -1,3 +1,7 @@
+import { aboutPageMetadata } from "@/lib/seo";
+
+export const metadata = aboutPageMetadata("tratamiento-datos/vigencia");
+
 export default function TratamientoDatosVigenciaPage() {
   return (
     <article className="mx-auto w-full max-w-4xl">

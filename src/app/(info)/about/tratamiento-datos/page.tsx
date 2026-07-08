@@ -1,3 +1,7 @@
+import { aboutPageMetadata } from "@/lib/seo";
+
+export const metadata = aboutPageMetadata("tratamiento-datos");
+
 export default function TratamientoDatosIndexPage() {
   return (
     <article className="mx-auto w-full max-w-4xl">

@@ -1,3 +1,7 @@
+import { aboutPageMetadata } from "@/lib/seo";
+
+export const metadata = aboutPageMetadata("tratamiento-datos/finalidades");
+
 export default function TratamientoDatosFinalidadesPage() {
   return (
     <article className="mx-auto w-full max-w-4xl">

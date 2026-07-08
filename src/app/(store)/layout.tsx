@@ -1,4 +1,4 @@
-import { StoreLayout } from "../../components/layout/StoreLayout";
+import { StoreLayout } from "@/components/layout";
 
 export default function StoreLayoutRoute({
   children,

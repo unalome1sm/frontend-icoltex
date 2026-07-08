@@ -1,5 +1,8 @@
 export { StoreLayout } from "./StoreLayout";
-export { TopBar } from "./TopBar";
-export { Navbar } from "./Navbar";
-export { PromoBar } from "./PromoBar";
-export { DashboardSidebar } from "./DashboardSidebar";
+export { TopBar } from "./store/TopBar";
+export { Navbar } from "./store/Navbar";
+export { PromoBar } from "./store/PromoBar";
+export { Footer } from "./store/Footer";
+export { NavMegaMenu } from "./store/NavMegaMenu";
+export { DashboardSidebar } from "./dashboard/DashboardSidebar";
+export { InfoLayout } from "./info/InfoLayout";

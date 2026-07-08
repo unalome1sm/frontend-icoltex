@@ -1,5 +1,13 @@
 import { Suspense } from "react";
 import { StoresPuntosVentaPage } from "@/components/stores/StoresPuntosVentaPage";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata({
+  title: "Puntos de venta",
+  description:
+    "Encuentra los puntos de venta y showrooms de Icoltex en Colombia. Horarios, ubicación y asesoría presencial.",
+  path: "/stores",
+});
 
 function StoresPageFallback() {
   return (

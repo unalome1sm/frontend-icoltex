@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { X, ArrowRight } from "lucide-react";
 import { apiFetch } from "@/lib/api";
-import { setAuthToken } from "@/lib/auth/session";
+import { setAuthToken } from "@/lib/auth";
 import { useAuthSidebar } from "@/contexts/AuthSidebarContext";
 import { GoogleAuthDivider } from "@/components/auth/google/GoogleAuthDivider";
 import { GoogleSignInButton } from "@/components/auth/google/GoogleSignInButton";

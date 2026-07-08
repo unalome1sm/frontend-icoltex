@@ -1,3 +1,7 @@
+import { aboutPageMetadata } from "@/lib/seo";
+
+export const metadata = aboutPageMetadata("tiempos-de-respuesta");
+
 export default function TiemposDeRespuestaPage() {
   return (
     <article className="mx-auto w-full max-w-4xl">

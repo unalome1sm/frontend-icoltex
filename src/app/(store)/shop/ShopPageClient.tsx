@@ -3,10 +3,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SlidersHorizontal, X } from "lucide-react";
-import { BannerCarousel } from "@/components/home/BannerCarousel";
+import { BannerCarousel } from "@/components/home";
 import { ShopFilters, ProductGrid, ShopSortBar } from "@/components/shop";
 import type { ProductCardData } from "@/components/shop";
-import { fetchGroupedProductsPage, groupedRowToCardData } from "@/lib/groupedCatalog";
+import { fetchGroupedProductsPage, groupedRowToCardData } from "@/lib/catalog";
 import {
   DEFAULT_SHOP_FILTERS,
   fetchCatalogFilterMeta,
@@ -15,7 +15,7 @@ import {
   shopFiltersToSearchParams,
   type CatalogFilterMeta,
   type ShopFilterState,
-} from "@/lib/shopFilters";
+} from "@/lib/catalog";
 
 const PAGE_SIZE = 12;
 
@@ -132,11 +132,11 @@ export function ShopPageClient() {
           />
         </div>
 
-        <main className="min-w-0 flex-1 border-slate-200 bg-white p-4 lg:p-6">
+        <div className="min-w-0 flex-1 border-slate-200 bg-white p-4 lg:p-6">
           <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-xl font-semibold text-slate-900">Catálogo</h2>
+                <h1 className="text-xl font-semibold text-slate-900">Catálogo</h1>
                 {!loading && (
                   <p className="text-sm text-slate-500">
                     {pagination.total} producto{pagination.total !== 1 ? "s" : ""}
@@ -214,7 +214,7 @@ export function ShopPageClient() {
               )}
             </>
           )}
-        </main>
+        </div>
       </div>
 
       {filtersOpen && (

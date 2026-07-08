@@ -2,19 +2,19 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { AdminCatalogGroupThumbnail } from "@/components/admin/catalog/AdminCatalogGroupThumbnail";
+import { AdminCatalogGroupThumbnail } from "@/components/admin/catalog";
 import {
   fetchGroupedProductsPage,
   formatGroupedPrice,
   groupImageSourceLabel,
   resolveGroupThumbnailUrl,
   type GroupedProductRow,
-} from "@/lib/groupedCatalog";
+} from "@/lib/catalog";
 import {
   categoriasForClase,
   fetchCatalogFilterMeta,
   type CatalogFilterMeta,
-} from "@/lib/shopFilters";
+} from "@/lib/catalog";
 
 type AdminFilters = {
   classFamily: string;

@@ -1,3 +1,7 @@
+import { noIndexMetadata } from "@/lib/seo";
+
+export const metadata = noIndexMetadata("Acceso");
+
 export default function AuthLayout({
   children,
 }: {

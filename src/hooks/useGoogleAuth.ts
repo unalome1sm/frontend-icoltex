@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { authenticateWithGoogleIdToken } from "@/lib/auth/googleSignIn";
+import { authenticateWithGoogleIdToken } from "@/lib/auth";
 
 export function useGoogleAuth(onSuccess?: () => void) {
   const [loading, setLoading] = useState(false);

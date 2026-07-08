@@ -1,3 +1,7 @@
+import { aboutPageMetadata } from "@/lib/seo";
+
+export const metadata = aboutPageMetadata("que-cubre-la-garantia");
+
 export default function QueCubreLaGarantiaPage() {
   return (
     <article className="mx-auto w-full max-w-4xl">

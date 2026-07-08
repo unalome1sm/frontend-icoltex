@@ -1,0 +1,47 @@
+---
+description: React component patterns — Tailwind, contexts, minimal scope
+globs: src/components/**/*.tsx,src/contexts/**/*.tsx
+alwaysApply: true
+---
+
+# React components
+
+## Stack
+
+- React 19 + Next.js 16 App Router
+- Tailwind CSS v4 — use utility classes; avoid inline styles unless dynamic (e.g. brand colors from data)
+- Icons: `lucide-react`
+
+## Structure
+
+```tsx
+"use client"; // only if needed
+
+import { ... } from "@/components/shop";
+
+type Props = { ... };
+
+export function MyComponent({ ... }: Props) {
+  return ( ... );
+}
+```
+
+- One main export per file, named export matching the filename.
+- Colocate types in the same file unless shared across modules.
+
+## Shared state
+
+| Context | Use for |
+|---------|---------|
+| `AuthContext` | logged-in user, logout |
+| `AuthSidebarContext` | login/register sidebar |
+| `CartContext` | cart items and sidebar |
+
+Do not prop-drill auth/cart when a context already exists.
+
+## Scope and quality
+
+- Match existing patterns in the same folder before inventing new abstractions.
+- Prefer extending existing components over duplicating markup.
+- Only add `"use client"` boundaries as small as necessary for interactivity.
+- Do not create markdown/docs files unless explicitly requested.

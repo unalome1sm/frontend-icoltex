@@ -1,3 +1,7 @@
+import { aboutPageMetadata } from "@/lib/seo";
+
+export const metadata = aboutPageMetadata("informacion-adicional");
+
 export default function InformacionAdicionalPage() {
   return (
     <article className="mx-auto w-full max-w-4xl">

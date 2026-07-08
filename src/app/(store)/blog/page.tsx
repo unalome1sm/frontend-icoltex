@@ -1,3 +1,12 @@
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata({
+  title: "Blog",
+  description:
+    "Artículos sobre tendencias en telas, confección y cuidado de textiles. Novedades y consejos de Icoltex.",
+  path: "/blog",
+});
+
 export default function BlogPage() {
   return (
     <div className="space-y-6">

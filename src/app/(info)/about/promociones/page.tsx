@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { aboutPageMetadata } from "@/lib/seo";
+
+export const metadata = aboutPageMetadata("promociones");
 
 const PROMO_TERMS = [
   {

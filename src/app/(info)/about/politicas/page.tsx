@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { aboutPageMetadata } from "@/lib/seo";
+
+export const metadata = aboutPageMetadata("politicas");
 
 const POLICY_LINKS = [
   { label: "Condiciones generales", href: "/about/condiciones-generales" },

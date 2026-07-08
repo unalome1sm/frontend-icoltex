@@ -1,3 +1,7 @@
+import { aboutPageMetadata } from "@/lib/seo";
+
+export const metadata = aboutPageMetadata("tratamiento-datos/datos-sensibles");
+
 export default function TratamientoDatosSensiblesPage() {
   return (
     <article className="mx-auto w-full max-w-4xl">

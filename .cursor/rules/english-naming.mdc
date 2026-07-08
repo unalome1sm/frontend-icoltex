@@ -1,0 +1,40 @@
+---
+description: New code and files must use English — UI copy stays in Spanish
+alwaysApply: true
+---
+
+# English for code, Spanish for UI
+
+## Always in English (new files and symbols)
+
+- File and folder names: `ProductReviewsSection.tsx`, `shopFilters.ts`, `banner/`
+- Components, functions, hooks, types, variables, props
+- Comments and commit messages (unless the team explicitly uses Spanish for commits)
+- Route segment folder names under `src/app` when you create new ones (prefer English slugs for code; existing Spanish routes like `/about/como-hacer-un-reclamo` are legacy — do not rename without a product request)
+
+## Spanish is allowed only for user-facing content
+
+- Labels, headings, placeholders, error messages shown in the browser
+- SEO titles/descriptions aimed at Colombian/Spanish-speaking customers
+- Static copy in `about/` info pages
+
+```tsx
+// ✅ GOOD
+export function ShopSortBar({ onSortChange }: ShopSortBarProps) {
+  return <button aria-label="Ordenar productos">Precio: menor a mayor</button>;
+}
+
+// ❌ BAD — Spanish symbol names
+export function BarraOrdenTienda() { ... }
+const obtenerProductosDestacados = async () => { ... };
+```
+
+## Naming conventions
+
+| Kind | Convention | Example |
+|------|------------|---------|
+| React components | PascalCase | `ProductCard.tsx` |
+| Hooks | `use` + PascalCase | `useGoogleAuth.ts` |
+| Utils / lib | camelCase | `groupedCatalog.ts`, `reviewUtils.ts` |
+| Folders | lowercase English | `catalog/`, `reviews/` |
+| Types | PascalCase | `ProductCardData`, `SessionUser` |

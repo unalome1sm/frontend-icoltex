@@ -15,7 +15,7 @@ import {
   AUTH_TOKEN_KEY,
   logoutSession,
   type SessionUser,
-} from "@/lib/auth/session";
+} from "@/lib/auth";
 
 type AuthContextValue = {
   user: SessionUser | null;

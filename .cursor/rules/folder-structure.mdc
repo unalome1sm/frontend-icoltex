@@ -1,0 +1,48 @@
+---
+description: Folder layout — max 4 files per directory, subfolders by domain, barrel exports
+globs: src/components/**,src/lib/**
+alwaysApply: true
+---
+
+# Folder structure
+
+## Max 4 files at the root of any folder
+
+Count only files directly in the folder (not inside subfolders). When a 5th file is needed, move related files into a subfolder.
+
+Typical root contents:
+- `index.ts` — barrel exports (required when the folder is imported from outside)
+- One orchestrator (e.g. `HomePage.tsx`, `StoreLayout.tsx`) when it exists
+- At most 1–2 other top-level files before splitting
+
+## Subfolders by domain, not by file type
+
+Prefer grouping by feature/domain:
+
+| Area | Example subfolders |
+|------|-------------------|
+| `components/home` | `banner/`, `sections/` |
+| `components/shop` | `catalog/`, `product/`, `reviews/modals/`, `reviews/forms/` |
+| `components/layout` | `store/`, `dashboard/`, `info/` |
+| `components/admin/catalog` | `detail/`, `shared/` |
+| `lib` | `auth/`, `catalog/`, `products/`, `seo/`, `drive/` |
+
+## Barrel exports (`index.ts`)
+
+Every module folder exposed to the rest of the app must have an `index.ts` that re-exports its public API.
+
+```typescript
+// ✅ Import from barrel
+import { ProductDetail, ShopFilters } from "@/components/shop";
+import { fetchGroupedProductsPage } from "@/lib/catalog";
+
+// ❌ Avoid deep paths when a barrel exists
+import { ProductDetail } from "@/components/shop/product/ProductDetail";
+```
+
+## When reorganizing
+
+1. Create subfolders and move files (preserve git history with `git mv`).
+2. Add or update `index.ts`.
+3. Fix internal relative imports inside the folder.
+4. Update external imports to use the barrel path.

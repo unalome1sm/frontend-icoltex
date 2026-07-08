@@ -1,3 +1,7 @@
+import { aboutPageMetadata } from "@/lib/seo";
+
+export const metadata = aboutPageMetadata("tratamiento-datos/pqrs");
+
 export default function TratamientoDatosPqrsPage() {
   return (
     <article className="mx-auto w-full max-w-4xl">

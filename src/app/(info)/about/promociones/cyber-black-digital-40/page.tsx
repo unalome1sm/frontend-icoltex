@@ -1,3 +1,7 @@
+import { aboutPageMetadata } from "@/lib/seo";
+
+export const metadata = aboutPageMetadata("promociones/cyber-black-digital-40");
+
 const WHATSAPP_URL = "https://wa.me/573138718187";
 
 export default function CyberBlackDigital40Page() {

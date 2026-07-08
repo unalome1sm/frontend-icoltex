@@ -3,14 +3,14 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { AdminGroupProductDetail } from "@/components/admin/catalog/AdminGroupProductDetail";
 import {
+  AdminGroupProductDetail,
   AdminSkuProductDetail,
   type AdminSkuProduct,
-} from "@/components/admin/catalog/AdminSkuProductDetail";
+} from "@/components/admin/catalog";
 import { getApiUrl, getAuthHeaders } from "@/lib/api";
-import { fetchGroupedProductByGroupId, isMongoObjectId } from "@/lib/groupedCatalog";
-import type { GroupedProductRow } from "@/lib/groupedCatalog";
+import { fetchGroupedProductByGroupId, isMongoObjectId } from "@/lib/catalog";
+import type { GroupedProductRow } from "@/lib/catalog";
 
 export default function AdminProductDetailPage() {
   const params = useParams();

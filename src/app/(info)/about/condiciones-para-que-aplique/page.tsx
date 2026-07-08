@@ -1,3 +1,7 @@
+import { aboutPageMetadata } from "@/lib/seo";
+
+export const metadata = aboutPageMetadata("condiciones-para-que-aplique");
+
 export default function CondicionesParaQueApliquePage() {
   return (
     <article className="mx-auto w-full max-w-4xl">

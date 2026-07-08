@@ -1,0 +1,40 @@
+---
+description: Next.js App Router patterns for this project
+globs: src/app/**/*
+alwaysApply: true
+---
+
+# Next.js App Router
+
+## Route groups
+
+| Group | Path | Purpose |
+|-------|------|---------|
+| `(store)` | `/`, `/shop`, `/checkout` | Public storefront |
+| `(dashboard)` | `/admin/*` | Admin panel |
+| `(info)` | `/about/*` | Static info / legal pages |
+| `(auth)` | `/login`, `/register` | Auth flows inside store layout |
+
+## Server vs client components
+
+- **Default to Server Components** in `page.tsx` and `layout.tsx` when there is no client state, effects, or event handlers.
+- Add `"use client"` only when needed (hooks, `useState`, browser APIs, contexts).
+- Extract client UI into `*Client.tsx` or colocated components (e.g. `ShopPageClient.tsx`, `AdminLayoutClient.tsx`).
+
+## Metadata
+
+Use helpers from `@/lib/seo`:
+
+```typescript
+import { pageMetadata, noIndexMetadata, aboutPageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata({ title: "Tienda", description: "..." });
+// Admin, checkout, account → noIndexMetadata()
+// About pages → aboutPageMetadata("slug")
+```
+
+## Data fetching
+
+- Server pages: fetch in the page or in `src/lib/*` loaders (e.g. `loadProductPageData`).
+- Client lists/filters: fetch in client components via `@/lib/catalog` or `@/lib/api`.
+- Do not duplicate API URL logic — always go through `@/lib/api`.

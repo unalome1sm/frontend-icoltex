@@ -1,4 +1,7 @@
 import { CheckoutContent } from "@/components/checkout/CheckoutContent";
+import { noIndexMetadata } from "@/lib/seo";
+
+export const metadata = noIndexMetadata("Checkout");
 
 export default function CheckoutPage() {
   return (

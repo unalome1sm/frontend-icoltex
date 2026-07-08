@@ -1,0 +1,35 @@
+---
+description: General project constraints — scope, git, env, no secrets
+alwaysApply: true
+---
+
+# General project rules
+
+## Scope
+
+- Make the smallest correct change. Do not refactor unrelated files.
+- Do not commit `.next/`, `.env`, or credentials.
+- Do not run destructive git commands unless explicitly asked.
+- Only create git commits when the user requests them.
+
+## Environment
+
+- API base URL and secrets live in env vars consumed by `@/lib/api` — never hardcode tokens or JWT secrets in frontend code.
+
+## TypeScript
+
+- `strict` mode is on — avoid `any`; prefer explicit types for public APIs and props.
+- Run `npx tsc --noEmit` after structural refactors (folder moves, barrel changes).
+
+## Testing changes
+
+- `npm run dev` for local verification.
+- `npm run build` before release-critical changes.
+
+## When adding a feature
+
+1. Pick the correct domain folder (`components/shop`, `lib/catalog`, etc.).
+2. Respect the 4-file folder limit — create a subfolder if needed.
+3. Add exports to the nearest `index.ts`.
+4. Use English for new code; Spanish only for visible copy.
+5. Wire metadata/SEO if the change adds a new public route.

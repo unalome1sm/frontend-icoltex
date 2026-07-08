@@ -1,0 +1,37 @@
+---
+description: Path aliases, lib modules, and import conventions
+globs: src/**/*.ts,src/**/*.tsx
+alwaysApply: true
+---
+
+# Imports and lib modules
+
+## Use the `@/` alias
+
+```typescript
+import { ProductGrid } from "@/components/shop";
+import { pageMetadata } from "@/lib/seo";
+import { useAuth } from "@/contexts/AuthContext";
+```
+
+Never use long relative paths across feature boundaries (`../../../components/...`).
+
+## Lib module map
+
+| Module | Import from | Responsibility |
+|--------|-------------|----------------|
+| HTTP / API | `@/lib/api` | `getApiUrl`, `getAuthHeaders`, `apiFetch` |
+| Auth | `@/lib/auth` | tokens, session, Google sign-in |
+| Catalog | `@/lib/catalog` | grouped products, filters, nav catalog, swatches |
+| Products | `@/lib/products` | images, product page loader, reviews API |
+| SEO | `@/lib/seo` | metadata helpers, JSON-LD builders |
+| Drive | `@/lib/drive` | Google Drive file browser |
+
+## Naming collision in `@/lib/catalog`
+
+- `categoriasForClase` from `@/lib/catalog` → shop filter meta (admin products list, navbar)
+- Vitrina/item characteristics version → import from `@/lib/catalog/itemCharacteristics`
+
+## Keep imports at the public boundary
+
+Import from barrel `index.ts` files, not deep internal paths, unless accessing a module intentionally not re-exported (e.g. `itemCharacteristics` above).

@@ -6,7 +6,7 @@ import {
   distinctClases,
   categoriasForClase,
   type ItemCharacteristic,
-} from "@/lib/catalog";
+} from "@/lib/catalog/itemCharacteristics";
 import {
   ChevronDown,
   ChevronUp,

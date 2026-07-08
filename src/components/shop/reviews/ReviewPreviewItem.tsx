@@ -1,6 +1,6 @@
 "use client";
 
-import type { ProductReview } from "@/lib/productReviews";
+import type { ProductReview } from "@/lib/products";
 import { StarRatingDisplay } from "./ReviewStars";
 import { deriveReviewTitle } from "./reviewUtils";
 

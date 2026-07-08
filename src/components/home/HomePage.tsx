@@ -1,14 +1,15 @@
 import { HOME_TWO_PANEL_IMAGES } from "@/config/homeMedia";
-import { BannerCarousel } from "./BannerCarousel";
-import { TwoImageSection } from "./TwoImageSection";
-import { DestacadosSection } from "./DestacadosSection";
-import { NovedadesDestacadosSection } from "./NovedadesDestacadosSection";
-import { BannerRojoSection } from "./BannerRojoSection";
-import { NewsletterSection } from "./NewsletterSection";
+import { BannerCarousel } from "./banner/BannerCarousel";
+import { TwoImageSection } from "./banner/TwoImageSection";
+import { BannerRojoSection } from "./banner/BannerRojoSection";
+import { DestacadosSection } from "./sections/DestacadosSection";
+import { NovedadesDestacadosSection } from "./sections/NovedadesDestacadosSection";
+import { NewsletterSection } from "./sections/NewsletterSection";
 
 export function HomePage() {
   return (
     <div className="space-y-0">
+      <h1 className="sr-only">Icoltex — Tienda de telas de alta calidad</h1>
       {/* Banner: 100% ancho y pegado a la barra de promoción */}
       <section
         className="-mt-8 w-screen max-w-none"
@@ -16,7 +17,6 @@ export function HomePage() {
       >
         <BannerCarousel />
       </section>
-
       {/* Dos imágenes debajo del banner (100% ancho) */}
       <section
         className="w-screen max-w-none"
@@ -45,10 +45,6 @@ export function HomePage() {
             <NewsletterSection />
           </section>
         </div>
-
-     
-
-
       </div>
     </div>
   );

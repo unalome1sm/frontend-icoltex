@@ -1,7 +1,7 @@
-import { TopBar } from "./TopBar";
-import { Navbar } from "./Navbar";
-import { PromoBar } from "./PromoBar";
-import { Footer } from "./Footer";
+import { TopBar } from "./store/TopBar";
+import { Navbar } from "./store/Navbar";
+import { PromoBar } from "./store/PromoBar";
+import { Footer } from "./store/Footer";
 import { AuthSidebarProvider } from "@/contexts/AuthSidebarContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AuthSidebar } from "@/components/auth/AuthSidebar";
