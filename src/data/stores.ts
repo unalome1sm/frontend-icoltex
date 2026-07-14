@@ -156,3 +156,19 @@ export function cityLabel(value: string) {
 export function getStoreFullAddress(store: Store) {
   return `${store.address}, ${cityLabel(store.city)}, Colombia`;
 }
+
+/** Google Maps Directions URL from optional user coords to the store. */
+export function buildStoreDirectionsUrl(
+  store: Store,
+  origin?: { lat: number; lng: number },
+): string {
+  const params = new URLSearchParams({
+    api: "1",
+    destination: getStoreFullAddress(store),
+    travelmode: "driving",
+  });
+  if (origin) {
+    params.set("origin", `${origin.lat},${origin.lng}`);
+  }
+  return `https://www.google.com/maps/dir/?${params.toString()}`;
+}

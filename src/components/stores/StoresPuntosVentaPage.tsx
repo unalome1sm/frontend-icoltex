@@ -1,10 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Clock, MapPin, Phone, X } from "lucide-react";
-import { CITIES, STORES, cityLabel } from "@/data/stores";
+import { Clock, MapPin, Navigation, Phone, X } from "lucide-react";
+import {
+  CITIES,
+  STORES,
+  buildStoreDirectionsUrl,
+  cityLabel,
+  type Store,
+} from "@/data/stores";
 import { StoresMap } from "@/components/stores/StoresMap";
 
 const HERO_IMAGE = "/media/banner/DSC02694.webp";
@@ -23,6 +29,10 @@ function formatPhoneDisplay(phone: string): string {
     return `+57 ${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
   }
   return phone.startsWith("+") ? phone : `+57 ${phone}`;
+}
+
+function openDirections(url: string) {
+  window.open(url, "_blank", "noopener,noreferrer");
 }
 
 function toDrivePreviewUrl(url: string): string {
@@ -107,6 +117,41 @@ export function StoresPuntosVentaPage() {
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
   const [videoOpen, setVideoOpen] = useState(false);
+  const [routeLoading, setRouteLoading] = useState(false);
+  const [routeError, setRouteError] = useState<string | null>(null);
+
+  const handleLoadRoute = useCallback((store: Store) => {
+    setRouteError(null);
+
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setRouteError(
+        "Tu navegador no permite geolocalización. Abrimos Google Maps con el destino de la tienda.",
+      );
+      openDirections(buildStoreDirectionsUrl(store));
+      return;
+    }
+
+    setRouteLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setRouteLoading(false);
+        openDirections(
+          buildStoreDirectionsUrl(store, {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          }),
+        );
+      },
+      () => {
+        setRouteLoading(false);
+        setRouteError(
+          "No pudimos obtener tu ubicación. Abrimos Google Maps para que indiques el punto de partida.",
+        );
+        openDirections(buildStoreDirectionsUrl(store));
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 60_000 },
+    );
+  }, []);
 
   useEffect(() => {
     if (cityParam && CITY_FILTERS.some((c) => c.value === cityParam)) {
@@ -144,6 +189,7 @@ export function StoresPuntosVentaPage() {
 
   useEffect(() => {
     setVideoOpen(false);
+    setRouteError(null);
   }, [selectedStore?.id]);
 
   return (
@@ -282,25 +328,39 @@ export function StoresPuntosVentaPage() {
                   </li>
                 </ul>
 
-                <div className="flex flex-col gap-3 sm:flex-row">
+                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                   <a
                     href={phoneToWhatsAppUrl(selectedStore.phone)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex flex-1 items-center justify-center rounded-lg bg-red-600 px-6 py-3.5 text-center text-sm font-semibold text-white transition hover:bg-red-700 sm:text-base"
+                    className="inline-flex flex-1 items-center justify-center rounded-lg bg-red-600 px-6 py-3.5 text-center text-sm font-semibold text-white transition hover:bg-red-700 sm:min-w-[12rem] sm:text-base"
                   >
                     Click aquí para que te atienda el punto de venta
                   </a>
+                  <button
+                    type="button"
+                    disabled={routeLoading}
+                    onClick={() => handleLoadRoute(selectedStore)}
+                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-red-600 bg-white px-6 py-3.5 text-center text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-wait disabled:opacity-70 sm:min-w-[12rem] sm:text-base"
+                  >
+                    <Navigation className="h-4 w-4 shrink-0" aria-hidden />
+                    {routeLoading ? "Obteniendo ubicación…" : "Cargar ruta"}
+                  </button>
                   {selectedStore.videoGuideUrl && (
                     <button
                       type="button"
                       onClick={() => setVideoOpen(true)}
-                      className="inline-flex flex-1 items-center justify-center rounded-lg border border-red-600 bg-white px-6 py-3.5 text-center text-sm font-semibold text-red-600 transition hover:bg-red-50 sm:text-base"
+                      className="inline-flex flex-1 items-center justify-center rounded-lg border border-red-600 bg-white px-6 py-3.5 text-center text-sm font-semibold text-red-600 transition hover:bg-red-50 sm:min-w-[12rem] sm:text-base"
                     >
                       Video guía
                     </button>
                   )}
                 </div>
+                {routeError && (
+                  <p className="text-sm text-amber-700" role="status">
+                    {routeError}
+                  </p>
+                )}
 
                 <VideoGuideModal
                   open={videoOpen}

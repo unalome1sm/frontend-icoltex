@@ -50,6 +50,9 @@ const nextConfig: NextConfig = {
         pathname: "/api/images/proxy",
         // Sin `search`: permite ?url=... del proxy de Drive
       },
+      {
+        pathname: "/media/**",
+      },
     ],
     remotePatterns: [
       {
