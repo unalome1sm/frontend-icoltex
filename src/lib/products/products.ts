@@ -71,10 +71,12 @@ export function getImageDisplayUrl(directUrl: string): string {
   if (!directUrl) return "";
   const proxied = normalizeProxiedImageUrl(directUrl);
   if (proxied) return proxied;
-  if (isDriveImageUrl(directUrl)) {
-    return buildProxiedImageUrl(directUrl);
+  // Always normalize /file/d/.../view → uc?export=view before proxying
+  const normalized = toDirectImageUrl(directUrl);
+  if (isDriveImageUrl(normalized)) {
+    return buildProxiedImageUrl(normalized);
   }
-  return directUrl;
+  return normalized;
 }
 
 export function mapImageUrlsForDisplay(urls: string[]): string[] {

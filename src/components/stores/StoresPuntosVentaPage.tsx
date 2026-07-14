@@ -14,8 +14,11 @@ import {
 import { StoresMap } from "@/components/stores/StoresMap";
 import { getImageDisplayUrl } from "@/lib/products";
 
+const STORE_HERO_DRIVE_ID = "1a7HjuSK5LOBNiMQ-cFc3Avd2Ix47EoFg";
+
+/** Shared banner for all stores until each store has its own photo. */
 const HERO_IMAGE = getImageDisplayUrl(
-  "https://drive.google.com/file/d/1a7HjuSK5LOBNiMQ-cFc3Avd2Ix47EoFg/view?usp=drive_link",
+  `https://drive.google.com/uc?export=view&id=${STORE_HERO_DRIVE_ID}`,
 );
 
 const CITY_FILTERS = CITIES.filter((c) => c.value !== "");
@@ -283,6 +286,7 @@ export function StoresPuntosVentaPage() {
                   className="h-auto w-full max-h-[320px] object-contain sm:max-h-[400px] md:max-h-[460px]"
                   sizes="(max-width: 1280px) 100vw, 1280px"
                   priority
+                  unoptimized
                 />
               </div>
               <span className="absolute bottom-4 right-4 rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-red-600 shadow-md">
