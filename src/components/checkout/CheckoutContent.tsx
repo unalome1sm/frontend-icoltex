@@ -3,24 +3,24 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useCart, type CartItem } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { getApiUrl, getAuthHeaders } from "@/lib/api";
 import { getImageDisplayUrl } from "@/lib/products";
+import {
+  createOrderAndGetWompiCheckout,
+  redirectToWompiCheckout,
+} from "@/lib/payments";
 import { CheckoutPersonalForm } from "./steps/CheckoutPersonalForm";
 import { CheckoutShippingForm } from "./steps/CheckoutShippingForm";
 import { CheckoutPaymentStep } from "./steps/CheckoutPaymentStep";
 import {
-  buildOrderSnapshot,
-  clearCheckoutDraft,
   EMPTY_PAYMENT,
   EMPTY_PERSONAL,
   EMPTY_SHIPPING,
   loadCheckoutDraft,
   saveCheckoutDraft,
-  saveLastOrder,
   validatePayment,
   validatePersonal,
   validateShipping,
@@ -79,8 +79,7 @@ function AccordionHeader({
 }
 
 export function CheckoutContent() {
-  const router = useRouter();
-  const { items, subtotal, clearCart, isHydrated } = useCart();
+  const { items, subtotal, isHydrated } = useCart();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
 
   const [stepOpen, setStepOpen] = useState<Step>(1);
@@ -177,7 +176,7 @@ export function CheckoutContent() {
     if (!err) setStepOpen(3);
   }, [shipping]);
 
-  const handleConfirm = useCallback(() => {
+  const handleConfirm = useCallback(async () => {
     const pErr = validatePersonal(personal);
     const sErr = validateShipping(shipping);
     const payErr = validatePayment(payment);
@@ -196,22 +195,30 @@ export function CheckoutContent() {
     if (payErr || items.length === 0) return;
 
     setSubmitting(true);
+    setPaymentError(null);
     try {
-      const order = buildOrderSnapshot({
-        personal,
+      const { checkout } = await createOrderAndGetWompiCheckout({
+        customer: personal,
         shipping,
-        payment,
-        items,
-        subtotal,
+        items: items.map((item) => ({
+          productId: item.productId,
+          nombre: item.nombre,
+          quantity: item.quantity,
+          measure: item.measure,
+          color: item.color,
+          precioMetro: item.precioMetro,
+          imageUrl: item.imageUrl,
+        })),
       });
-      saveLastOrder(order);
-      clearCheckoutDraft();
-      clearCart();
-      router.push("/checkout/success");
-    } finally {
+      // Keep cart until APPROVED on /checkout/result (webhook is source of truth).
+      redirectToWompiCheckout(checkout);
+    } catch (e) {
+      setPaymentError(
+        e instanceof Error ? e.message : "No se pudo iniciar el pago con Wompi.",
+      );
       setSubmitting(false);
     }
-  }, [personal, shipping, payment, items, subtotal, clearCart, router]);
+  }, [personal, shipping, payment, items]);
 
   if (!isHydrated) {
     return (
@@ -292,12 +299,14 @@ export function CheckoutContent() {
             />
             {stepOpen === 3 && (
               <CheckoutPaymentStep
-                value={payment}
                 error={paymentError}
                 submitting={submitting}
                 disabled={items.length === 0}
-                onChange={setPayment}
-                onSubmit={handleConfirm}
+                acceptTerms={payment.acceptTerms}
+                onAcceptTermsChange={(acceptTerms) =>
+                  setPayment((prev) => ({ ...prev, acceptTerms, method: "wompi" }))
+                }
+                onSubmit={() => void handleConfirm()}
                 onBack={() => setStepOpen(2)}
               />
             )}

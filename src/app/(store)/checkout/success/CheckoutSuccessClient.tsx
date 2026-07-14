@@ -14,8 +14,7 @@ const MEASURE_LABELS: Record<CartItem["measure"], string> = {
 };
 
 const PAYMENT_LABELS: Record<OrderSnapshot["paymentMethod"], string> = {
-  transferencia: "Transferencia bancaria",
-  pendiente: "Pago pendiente de confirmación",
+  wompi: "Wompi",
 };
 
 export function CheckoutSuccessClient() {

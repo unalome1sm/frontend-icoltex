@@ -22,7 +22,7 @@ export type ShippingData = {
   notas: string;
 };
 
-export type PaymentMethod = "transferencia" | "pendiente";
+export type PaymentMethod = "wompi";
 
 export type PaymentData = {
   method: PaymentMethod;
@@ -66,7 +66,7 @@ export const EMPTY_SHIPPING: ShippingData = {
 };
 
 export const EMPTY_PAYMENT: PaymentData = {
-  method: "transferencia",
+  method: "wompi",
   acceptTerms: false,
 };
 
@@ -161,9 +161,9 @@ export function buildOrderSnapshot(input: {
     createdAt: new Date().toISOString(),
     customer: { ...input.personal },
     shipping: { ...input.shipping },
-    paymentMethod: input.payment.method,
-    items: input.items.map((i) => ({ ...i })),
-    subtotal: input.subtotal,
-    total: input.subtotal,
-  };
+  paymentMethod: "wompi",
+  items: input.items.map((i) => ({ ...i })),
+  subtotal: input.subtotal,
+  total: input.subtotal,
+};
 }

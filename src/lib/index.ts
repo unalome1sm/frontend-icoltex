@@ -4,3 +4,4 @@ export * from "./catalog";
 export * from "./products";
 export * from "./seo";
 export * from "./drive";
+export * from "./payments";
