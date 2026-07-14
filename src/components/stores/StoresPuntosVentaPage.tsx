@@ -12,8 +12,11 @@ import {
   type Store,
 } from "@/data/stores";
 import { StoresMap } from "@/components/stores/StoresMap";
+import { getImageDisplayUrl } from "@/lib/products";
 
-const HERO_IMAGE = "/media/banner/DSC02694.webp";
+const HERO_IMAGE = getImageDisplayUrl(
+  "https://drive.google.com/file/d/1a7HjuSK5LOBNiMQ-cFc3Avd2Ix47EoFg/view?usp=drive_link",
+);
 
 const CITY_FILTERS = CITIES.filter((c) => c.value !== "");
 
