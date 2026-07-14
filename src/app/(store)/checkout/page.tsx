@@ -1,4 +1,4 @@
-import { CheckoutContent } from "@/components/checkout/CheckoutContent";
+import { CheckoutContent } from "@/components/checkout";
 import { noIndexMetadata } from "@/lib/seo";
 
 export const metadata = noIndexMetadata("Checkout");

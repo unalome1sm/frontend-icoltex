@@ -16,9 +16,11 @@ export type CartItem = {
 type CartContextValue = {
   items: CartItem[];
   isOpen: boolean;
+  isHydrated: boolean;
   addItem: (item: Omit<CartItem, "id">) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
+  clearCart: () => void;
   openCart: () => void;
   closeCart: () => void;
   itemCount: number;
@@ -31,6 +33,14 @@ const CartContext = createContext<CartContextValue | null>(null);
 
 function generateCartItemId(): string {
   return `cart-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+function sameLine(a: CartItem, b: Omit<CartItem, "id">): boolean {
+  return (
+    a.productId === b.productId &&
+    a.measure === b.measure &&
+    (a.color ?? "") === (b.color ?? "")
+  );
 }
 
 function loadCartFromStorage(): CartItem[] {
@@ -57,21 +67,30 @@ function saveCartToStorage(items: CartItem[]) {
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
     setItems(loadCartFromStorage());
+    setIsHydrated(true);
   }, []);
 
   useEffect(() => {
+    if (!isHydrated) return;
     saveCartToStorage(items);
-  }, [items]);
+  }, [items, isHydrated]);
 
   const addItem = useCallback((item: Omit<CartItem, "id">) => {
-    const newItem: CartItem = {
-      ...item,
-      id: generateCartItemId(),
-    };
-    setItems((prev) => [...prev, newItem]);
+    setItems((prev) => {
+      const existing = prev.find((i) => sameLine(i, item));
+      if (existing) {
+        return prev.map((i) =>
+          i.id === existing.id
+            ? { ...i, quantity: i.quantity + item.quantity, precioMetro: item.precioMetro, imageUrl: item.imageUrl ?? i.imageUrl, nombre: item.nombre }
+            : i
+        );
+      }
+      return [...prev, { ...item, id: generateCartItemId() }];
+    });
     setIsOpen(true);
   }, []);
 
@@ -86,6 +105,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
+  const clearCart = useCallback(() => {
+    setItems([]);
+  }, []);
+
   const openCart = useCallback(() => setIsOpen(true), []);
   const closeCart = useCallback(() => setIsOpen(false), []);
 
@@ -97,9 +120,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
       value={{
         items,
         isOpen,
+        isHydrated,
         addItem,
         removeItem,
         updateQuantity,
+        clearCart,
         openCart,
         closeCart,
         itemCount,
