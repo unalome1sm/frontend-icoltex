@@ -9,10 +9,10 @@ import { useCart } from "@/contexts/CartContext";
 import { NavMegaMenu } from "./NavMegaMenu";
 import {
   NAV_CATALOG_ITEMS,
-  categoriasForNavItem,
   isNavItemActive,
-  resolveClaseForNav,
-  shopUrlForClase,
+  productosForNavItem,
+  resolveLineaForNav,
+  shopUrlForLinea,
   shopUrlForSearch,
 } from "@/lib/catalog";
 import { fetchCatalogFilterMeta, type CatalogFilterMeta } from "@/lib/catalog";
@@ -26,8 +26,8 @@ export function Navbar() {
   useEffect(() => {
     setSearch(typeof window !== "undefined" ? window.location.search : "");
   }, [pathname]);
-  const claseParam = useMemo(
-    () => (search ? new URLSearchParams(search).get("clase") : null),
+  const lineaParam = useMemo(
+    () => (search ? new URLSearchParams(search).get("linea") : null),
     [search],
   );
 
@@ -149,7 +149,7 @@ export function Navbar() {
             const isExternal = "href" in item && item.href;
             const isOpen = openMenuId === item.id;
             const isActive =
-              isOpen || isNavItemActive(item.label, pathname, claseParam, meta);
+              isOpen || isNavItemActive(item.label, pathname, lineaParam, meta);
 
             if (isExternal) {
               return (
@@ -220,8 +220,8 @@ export function Navbar() {
       {openItem && !("href" in openItem && openItem.href) && (
         <NavMegaMenu
           item={openItem}
-          classFamily={resolveClaseForNav(openItem.label, meta)}
-          categorias={categoriasForNavItem(openItem.label, meta)}
+          linea={resolveLineaForNav(openItem.label, meta)}
+          productos={productosForNavItem(openItem.label, meta)}
           loading={loadingMeta}
           onClose={() => setOpenMenuId(null)}
         />
@@ -258,9 +258,9 @@ export function Navbar() {
               }
 
               const expanded = mobileExpandedId === item.id;
-              const classFamily = resolveClaseForNav(item.label, meta);
-              const categorias = categoriasForNavItem(item.label, meta);
-              const isActive = isNavItemActive(item.label, pathname, claseParam, meta);
+              const linea = resolveLineaForNav(item.label, meta);
+              const productos = productosForNavItem(item.label, meta);
+              const isActive = isNavItemActive(item.label, pathname, lineaParam, meta);
 
               return (
                 <div key={item.id} className="border-b border-slate-100 last:border-0">
@@ -281,7 +281,7 @@ export function Navbar() {
                   {expanded && (
                     <div className="space-y-1 px-3 pb-3">
                       <Link
-                        href={shopUrlForClase(classFamily)}
+                        href={shopUrlForLinea(linea)}
                         onClick={closeMenus}
                         className="block py-1.5 text-sm font-semibold text-slate-800 hover:text-red-600"
                       >
@@ -290,14 +290,14 @@ export function Navbar() {
                       {loadingMeta ? (
                         <p className="py-2 text-sm text-slate-500">Cargando…</p>
                       ) : (
-                        categorias.map((cat) => (
+                        productos.map((producto) => (
                           <Link
-                            key={cat}
-                            href={shopUrlForClase(classFamily, cat)}
+                            key={producto}
+                            href={shopUrlForLinea(linea, producto)}
                             onClick={closeMenus}
                             className="block py-1.5 text-sm text-slate-600 hover:text-red-600"
                           >
-                            {cat}
+                            {producto}
                           </Link>
                         ))
                       )}

@@ -8,6 +8,7 @@ import { AuthSidebar } from "@/components/auth/AuthSidebar";
 import { GoogleAuthProvider } from "@/components/auth/google/GoogleAuthProvider";
 import { CartProvider } from "@/contexts/CartContext";
 import { CartSidebar } from "@/components/cart/CartSidebar";
+import { WhatsAppFab } from "@/components/chat";
 
 export function StoreLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -26,6 +27,7 @@ export function StoreLayout({ children }: { children: React.ReactNode }) {
         </div>
         <AuthSidebar />
         <CartSidebar />
+        <WhatsAppFab />
       </CartProvider>
     </AuthSidebarProvider>
     </AuthProvider>

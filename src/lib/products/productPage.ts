@@ -37,6 +37,14 @@ export type ProductPageData = {
   canonicalId: string;
 };
 
+function firstFiltro1(group: GroupedProductRow): string | undefined {
+  for (const f of group.filtros ?? []) {
+    const v = f.filtro1?.[0]?.trim();
+    if (v) return v;
+  }
+  return undefined;
+}
+
 function toDetailData(p: ProductResponse): ProductDetailData {
   const imageUrls = mapImageUrlsForDisplay(p.imageUrls ?? []);
   return {
@@ -78,14 +86,18 @@ function mapVariantToDetail(v: GroupedProductVariant, group: GroupedProductRow):
     codigo: v.codigo,
     categoria: group.categoria,
     claseFamilia: group.claseFamilia,
+    lineaComercial: firstFiltro1(group),
     stock: v.stock,
     precioMetro: v.precioMetro,
     precioKilos: v.precioKilos,
     imageUrls: imageUrls.length ? imageUrls : undefined,
     colores: v.colorLabel,
     caracteristica: v.caracteristica,
-    recomendacionesUsos: v.recomendacionesUsos,
-    recomendacionesCuidados: v.recomendacionesCuidados,
+    caracteristicasGrupo: group.caracteristicas,
+    descripcionCorta: group.descripcionCorta,
+    descripcionLarga: group.descripcionLarga,
+    recomendacionesUsos: group.usos || v.recomendacionesUsos,
+    recomendacionesCuidados: group.cuidados || v.recomendacionesCuidados,
     unidadMedida: v.unidadMedida,
   };
 }
@@ -95,10 +107,13 @@ function toVariantOptions(rows: GroupedProductVariant[]): ProductVariantOption[]
     mongoId: v.mongoId,
     codigo: v.codigo,
     colorLabel: v.colorLabel,
+    colorHex: v.colorHex,
     itemNameCompleto: v.itemNameCompleto,
     stock: v.stock,
+    activo: v.activo,
     precioMetro: v.precioMetro,
     precioKilos: v.precioKilos,
+    tienePrecio: v.tienePrecio,
     imageUrls: v.imageUrls,
     caracteristica: v.caracteristica,
     recomendacionesUsos: v.recomendacionesUsos,

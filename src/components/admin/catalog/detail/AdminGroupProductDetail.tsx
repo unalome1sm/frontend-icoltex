@@ -151,6 +151,50 @@ export function AdminGroupProductDetail({ group: initialGroup }: Props) {
         emptyMessage="Este grupo no tiene imágenes de línea en info-items-x-ref. Revisa imágenes por SKU en la tabla de variantes."
       />
 
+      {(group.descripcionCorta ||
+        group.descripcionLarga ||
+        group.caracteristicas ||
+        group.usos ||
+        group.cuidados) && (
+        <div className="rounded-xl border border-slate-200 bg-white p-4">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
+            Ficha vitrina
+          </h2>
+          <dl className="space-y-3 text-sm">
+            {group.descripcionCorta && (
+              <div>
+                <dt className="font-medium text-slate-700">Descripción corta</dt>
+                <dd className="mt-0.5 whitespace-pre-wrap text-slate-600">{group.descripcionCorta}</dd>
+              </div>
+            )}
+            {group.descripcionLarga && (
+              <div>
+                <dt className="font-medium text-slate-700">Descripción larga</dt>
+                <dd className="mt-0.5 whitespace-pre-wrap text-slate-600">{group.descripcionLarga}</dd>
+              </div>
+            )}
+            {group.caracteristicas && (
+              <div>
+                <dt className="font-medium text-slate-700">Características</dt>
+                <dd className="mt-0.5 whitespace-pre-wrap text-slate-600">{group.caracteristicas}</dd>
+              </div>
+            )}
+            {group.usos && (
+              <div>
+                <dt className="font-medium text-slate-700">Usos</dt>
+                <dd className="mt-0.5 whitespace-pre-wrap text-slate-600">{group.usos}</dd>
+              </div>
+            )}
+            {group.cuidados && (
+              <div>
+                <dt className="font-medium text-slate-700">Cuidados</dt>
+                <dd className="mt-0.5 whitespace-pre-wrap text-slate-600">{group.cuidados}</dd>
+              </div>
+            )}
+          </dl>
+        </div>
+      )}
+
       <AdminSapFiltrosPanel filtros={group.filtros} />
 
       <div>

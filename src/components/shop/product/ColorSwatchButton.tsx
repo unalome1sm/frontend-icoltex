@@ -4,13 +4,14 @@ import { colorNameToSwatchStyle } from "@/lib/catalog";
 
 type Props = {
   color: string;
+  colorHex?: string;
   selected: boolean;
   onClick: () => void;
 };
 
-/** Círculo de color derivado solo del nombre (colorLabel SAP). */
-export function ColorSwatchButton({ color, selected, onClick }: Props) {
-  const swatch = colorNameToSwatchStyle(color);
+/** Círculo de color: prefer `colorHex` SAP; fallback por nombre. */
+export function ColorSwatchButton({ color, colorHex, selected, onClick }: Props) {
+  const swatch = colorNameToSwatchStyle(color, colorHex);
 
   const ringClass = selected
     ? "border-slate-900 ring-2 ring-slate-900 ring-offset-2"

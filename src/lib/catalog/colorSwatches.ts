@@ -89,7 +89,22 @@ export function isColorMapped(name: string): boolean {
   return matchSwatchFromNormalized(n) !== null;
 }
 
-export function colorNameToSwatchStyle(name: string): ColorSwatchStyle {
+export function colorNameToSwatchStyle(name: string, colorHex?: string): ColorSwatchStyle {
+  const hex = colorHex?.trim();
+  if (hex && /^#?[0-9A-Fa-f]{3}([0-9A-Fa-f]{3})?([0-9A-Fa-f]{2})?$/.test(hex)) {
+    const normalized = hex.startsWith("#") ? hex.toUpperCase() : `#${hex.toUpperCase()}`;
+    const isLight =
+      normalized === "#FFFFFF" ||
+      normalized === "#FAFAF7" ||
+      normalized === "#FFF" ||
+      /^#(F[8-9A-F]|E[8-9A-F])/i.test(normalized);
+    return {
+      backgroundColor: normalized,
+      borderColor: isLight ? "#d6d3d1" : undefined,
+      mapped: true,
+    };
+  }
+
   const n = normalizeColorName(name);
   if (!n) {
     return { backgroundColor: "#94a3b8", mapped: false };

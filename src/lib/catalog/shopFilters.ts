@@ -3,18 +3,27 @@ import type { CatalogSortOption } from "./groupedCatalog";
 import { auditColorLabels, type ColorAuditEntry } from "./colorSwatches";
 
 export type CatalogFilterMeta = {
-  clases: string[];
-  categoriasByClase: Record<string, string[]>;
+  lineas: string[];
+  usosByLinea: Record<string, string[]>;
+  prendasByLinea: Record<string, string[]>;
+  productosByLinea: Record<string, string[]>;
   colores: string[];
   precioMin: number | null;
   precioMax: number | null;
   totalGroups: number;
   totalVariants: number;
+  /** @deprecated Admin / legado técnico */
+  clases: string[];
+  /** @deprecated Admin / legado técnico */
+  categoriasByClase: Record<string, string[]>;
 };
 
 export type ShopFilterState = {
-  classFamily: string;
-  categories: string[];
+  filtro1: string;
+  filtro2: string[];
+  filtro3: string[];
+  /** Match exacto nombreVitrina */
+  nombre: string;
   colors: string[];
   inStock: boolean;
   precioMin: string;
@@ -24,8 +33,10 @@ export type ShopFilterState = {
 };
 
 export const DEFAULT_SHOP_FILTERS: ShopFilterState = {
-  classFamily: "",
-  categories: [],
+  filtro1: "",
+  filtro2: [],
+  filtro3: [],
+  nombre: "",
   colors: [],
   inStock: false,
   precioMin: "",
@@ -36,8 +47,10 @@ export const DEFAULT_SHOP_FILTERS: ShopFilterState = {
 
 export function shopFiltersToSearchParams(filters: ShopFilterState, page?: number): URLSearchParams {
   const sp = new URLSearchParams();
-  if (filters.classFamily) sp.set("clase", filters.classFamily);
-  if (filters.categories.length) sp.set("categorias", filters.categories.join(","));
+  if (filters.filtro1) sp.set("linea", filters.filtro1);
+  if (filters.filtro2.length) sp.set("usos", filters.filtro2.join(","));
+  if (filters.filtro3.length) sp.set("prendas", filters.filtro3.join(","));
+  if (filters.nombre.trim()) sp.set("nombre", filters.nombre.trim());
   if (filters.colors.length) sp.set("colores", filters.colors.join(","));
   if (filters.inStock) sp.set("stock", "1");
   if (filters.precioMin.trim()) sp.set("precioMin", filters.precioMin.trim());
@@ -53,8 +66,10 @@ export function shopFiltersFromSearchParams(sp: URLSearchParams): ShopFilterStat
   const validSort: CatalogSortOption[] = ["relevance", "price-asc", "price-desc", "name"];
 
   return {
-    classFamily: sp.get("clase") ?? "",
-    categories: parseList(sp.get("categorias")),
+    filtro1: sp.get("linea") ?? "",
+    filtro2: parseList(sp.get("usos")),
+    filtro3: parseList(sp.get("prendas")),
+    nombre: sp.get("nombre") ?? "",
     colors: parseList(sp.get("colores")),
     inStock: sp.get("stock") === "1" || sp.get("stock") === "true",
     precioMin: sp.get("precioMin") ?? "",
@@ -73,8 +88,10 @@ function parseList(value: string | null): string[] {
 
 export function shopFiltersActiveCount(filters: ShopFilterState): number {
   let n = 0;
-  if (filters.classFamily) n++;
-  if (filters.categories.length) n++;
+  if (filters.filtro1) n++;
+  if (filters.filtro2.length) n++;
+  if (filters.filtro3.length) n++;
+  if (filters.nombre.trim()) n++;
   if (filters.colors.length) n++;
   if (filters.inStock) n++;
   if (filters.precioMin.trim() || filters.precioMax.trim()) n++;
@@ -86,7 +103,19 @@ export async function fetchCatalogFilterMeta(): Promise<CatalogFilterMeta> {
   const res = await fetch(getApiUrl("/api/catalog/filter-meta"));
   const data = (await res.json()) as CatalogFilterMeta & { error?: string };
   if (!res.ok) throw new Error(data.error ?? "Error al cargar filtros");
-  return data;
+  return {
+    lineas: data.lineas ?? [],
+    usosByLinea: data.usosByLinea ?? {},
+    prendasByLinea: data.prendasByLinea ?? {},
+    productosByLinea: data.productosByLinea ?? {},
+    colores: data.colores ?? [],
+    precioMin: data.precioMin ?? null,
+    precioMax: data.precioMax ?? null,
+    totalGroups: data.totalGroups ?? 0,
+    totalVariants: data.totalVariants ?? 0,
+    clases: data.clases ?? [],
+    categoriasByClase: data.categoriasByClase ?? {},
+  };
 }
 
 /** Audita colorLabels del catálogo: cuáles tienen swatch mapeado vs fallback hash. */
@@ -98,16 +127,39 @@ export async function fetchColorLabelAudit(): Promise<{
   return auditColorLabels(meta.colores);
 }
 
+/** @deprecated Prefer usosForLinea / prendasForLinea — admin still uses clases. */
 export function categoriasForClase(
   meta: CatalogFilterMeta,
   classFamily: string,
 ): string[] {
   if (!classFamily.trim()) {
     const all = new Set<string>();
-    for (const cats of Object.values(meta.categoriasByClase)) {
+    for (const cats of Object.values(meta.categoriasByClase ?? {})) {
       for (const c of cats) all.add(c);
     }
     return [...all].sort((a, b) => a.localeCompare(b, "es"));
   }
-  return meta.categoriasByClase[classFamily] ?? [];
+  return meta.categoriasByClase?.[classFamily] ?? [];
+}
+
+function valuesForLinea(
+  byLinea: Record<string, string[]>,
+  filtro1: string,
+): string[] {
+  if (!filtro1.trim()) {
+    const all = new Set<string>();
+    for (const values of Object.values(byLinea)) {
+      for (const v of values) all.add(v);
+    }
+    return [...all].sort((a, b) => a.localeCompare(b, "es"));
+  }
+  return byLinea[filtro1] ?? [];
+}
+
+export function usosForLinea(meta: CatalogFilterMeta, filtro1: string): string[] {
+  return valuesForLinea(meta.usosByLinea ?? {}, filtro1);
+}
+
+export function prendasForLinea(meta: CatalogFilterMeta, filtro1: string): string[] {
+  return valuesForLinea(meta.prendasByLinea ?? {}, filtro1);
 }

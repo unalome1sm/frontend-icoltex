@@ -9,6 +9,7 @@ import { ProductCard } from "./ProductCard";
 import type { ProductCardData } from "./ProductCard";
 import { useCart } from "@/contexts/CartContext";
 import { mapImageUrlsForDisplay } from "@/lib/products";
+import { buildColorSwatches, resolveWinningIndexForVariant } from "@/lib/catalog";
 import { ColorSwatchButton } from "./ColorSwatchButton";
 import { ProductReviewsSection } from "./ProductReviewsSection";
 
@@ -18,12 +19,19 @@ export type ProductDetailData = {
   codigo?: string;
   categoria?: string;
   claseFamilia?: string;
+  /** Primera línea comercial (filtro1) para breadcrumbs */
+  lineaComercial?: string;
   stock: number;
   precioMetro?: number;
   precioKilos?: number;
   imageUrls?: string[];
   colores?: string;
+  /** Badge variante (promo/outlet) */
   caracteristica?: string;
+  /** Specs técnicos del grupo vitrina */
+  caracteristicasGrupo?: string;
+  descripcionCorta?: string;
+  descripcionLarga?: string;
   recomendacionesUsos?: string;
   recomendacionesCuidados?: string;
   unidadMedida?: string;
@@ -33,10 +41,13 @@ export type ProductVariantOption = {
   mongoId: string;
   codigo: string;
   colorLabel: string;
+  colorHex?: string;
   itemNameCompleto: string;
   stock: number;
+  activo?: boolean;
   precioMetro?: number;
   precioKilos?: number;
+  tienePrecio?: boolean;
   imageUrls?: string[];
   caracteristica?: string;
   recomendacionesUsos?: string;
@@ -108,9 +119,11 @@ export function ProductDetail({
   useEffect(() => {
     if (!hasVariantes || !variantes) return;
     const i = variantes.findIndex((v) => v.mongoId === product.id);
-    setVariantIndex(i >= 0 ? i : 0);
-    setSelectedColor(null);
-    // variantesGroupId + product.id bastan; variantes se lee del closure al montar/cambiar grupo.
+    const baseIndex = i >= 0 ? i : 0;
+    const winnerIndex = resolveWinningIndexForVariant(variantes, baseIndex);
+    setVariantIndex(winnerIndex);
+    const winner = variantes[winnerIndex];
+    setSelectedColor(winner?.colorLabel?.trim() || null);
   }, [product.id, hasVariantes, variantesGroupId]);
 
   const activeVariant = useMemo(() => {
@@ -126,16 +139,32 @@ export function ProductDetail({
         ...d,
         categoria: product.categoria,
         claseFamilia: product.claseFamilia,
+        lineaComercial: product.lineaComercial,
+        caracteristicasGrupo: product.caracteristicasGrupo,
+        descripcionCorta: product.descripcionCorta,
+        descripcionLarga: product.descripcionLarga,
+        recomendacionesUsos: d.recomendacionesUsos || product.recomendacionesUsos,
+        recomendacionesCuidados:
+          d.recomendacionesCuidados || product.recomendacionesCuidados,
       };
     }
     return product;
   }, [activeVariant, product, groupImageUrls]);
 
   const heading = tituloVitrina ?? displayProduct.nombre;
-  const colors = hasVariantes && variantes
-    ? variantes.map((v) => v.colorLabel)
-    : parseColors(product.colores);
-  const mainColor = selectedColor ?? colors[0] ?? "Azul marino";
+  const colorSwatches = useMemo(() => {
+    if (hasVariantes && variantes?.length) {
+      return buildColorSwatches(variantes);
+    }
+    return parseColors(product.colores).map((label) => ({
+      colorLabel: label,
+      colorHex: undefined as string | undefined,
+      variantIndex: 0,
+    }));
+  }, [hasVariantes, variantes, product.colores]);
+
+  const mainColor =
+    selectedColor ?? colorSwatches[0]?.colorLabel ?? "Azul marino";
   const images = displayProduct.imageUrls?.length ? displayProduct.imageUrls : [];
 
   function handleAddToCart() {
@@ -151,19 +180,21 @@ export function ProductDetail({
   }
 
   const breadcrumbItems = [
-    ...(displayProduct.claseFamilia
+    ...(displayProduct.lineaComercial
       ? [
           {
-            label: displayProduct.claseFamilia,
-            href: `/shop?clase=${encodeURIComponent(displayProduct.claseFamilia)}`,
+            label: displayProduct.lineaComercial,
+            href: `/shop?linea=${encodeURIComponent(displayProduct.lineaComercial)}`,
           },
         ]
       : []),
-    ...(displayProduct.categoria
+    ...(tituloVitrina && tituloVitrina !== heading
       ? [
           {
-            label: displayProduct.categoria,
-            href: `/shop?categorias=${encodeURIComponent(displayProduct.categoria)}`,
+            label: tituloVitrina,
+            href: displayProduct.lineaComercial
+              ? `/shop?linea=${encodeURIComponent(displayProduct.lineaComercial)}&nombre=${encodeURIComponent(tituloVitrina)}`
+              : `/shop?nombre=${encodeURIComponent(tituloVitrina)}`,
           },
         ]
       : []),
@@ -229,6 +260,12 @@ export function ProductDetail({
             )}
           </div>
 
+          {displayProduct.descripcionCorta?.trim() && (
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-600">
+              {displayProduct.descripcionCorta}
+            </p>
+          )}
+
           {/* Uso recomendado */}
           {displayProduct.recomendacionesUsos && (
             <div className="flex flex-wrap items-center gap-2">
@@ -283,25 +320,24 @@ export function ProductDetail({
           </div>
 
           {/* Color */}
-          {colors.length > 0 && (
+          {colorSwatches.length > 0 && (
             <div className="space-y-2">
               <p className="text-sm font-medium text-slate-800">
                 Color: {mainColor}
               </p>
               <div className="flex flex-wrap items-center gap-2">
-                {colors.map((color, idx) => (
+                {colorSwatches.map((swatch) => (
                   <ColorSwatchButton
-                    key={`${color}-${idx}`}
-                    color={color}
+                    key={swatch.colorLabel}
+                    color={swatch.colorLabel}
+                    colorHex={swatch.colorHex}
                     selected={
-                      selectedColor === color || (!selectedColor && color === colors[0])
+                      selectedColor === swatch.colorLabel ||
+                      (!selectedColor && swatch.colorLabel === colorSwatches[0]?.colorLabel)
                     }
                     onClick={() => {
-                      setSelectedColor(color);
-                      if (hasVariantes && variantes) {
-                        const vIdx = variantes.findIndex((v) => v.colorLabel === color);
-                        if (vIdx >= 0) setVariantIndex(vIdx);
-                      }
+                      setSelectedColor(swatch.colorLabel);
+                      setVariantIndex(swatch.variantIndex);
                     }}
                   />
                 ))}
@@ -331,9 +367,21 @@ export function ProductDetail({
 
           {/* Acordeones */}
           <div className="border-t border-slate-200 pt-4">
+            {displayProduct.descripcionLarga?.trim() && (
+              <ProductAccordion
+                title="Descripción"
+                defaultOpen={!displayProduct.descripcionCorta?.trim()}
+              >
+                <p className="whitespace-pre-wrap text-slate-600">
+                  {displayProduct.descripcionLarga}
+                </p>
+              </ProductAccordion>
+            )}
             <ProductAccordion title="Características" defaultOpen>
               <p className="whitespace-pre-wrap text-slate-600">
-                {displayProduct.caracteristica || "Sin características especificadas."}
+                {displayProduct.caracteristicasGrupo ||
+                  displayProduct.caracteristica ||
+                  "Sin características especificadas."}
               </p>
             </ProductAccordion>
             <ProductAccordion title="Envíos y devoluciones">

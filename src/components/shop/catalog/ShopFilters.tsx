@@ -3,8 +3,9 @@
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, X } from "lucide-react";
 import {
-  categoriasForClase,
   DEFAULT_SHOP_FILTERS,
+  prendasForLinea,
+  usosForLinea,
   type CatalogFilterMeta,
   type ShopFilterState,
 } from "@/lib/catalog";
@@ -16,7 +17,7 @@ type ShopFiltersProps = {
   loadingMeta?: boolean;
 };
 
-type SectionId = "clase" | "categoria" | "color" | "precio" | "stock";
+type SectionId = "linea" | "uso" | "prenda" | "color" | "precio" | "stock";
 
 function FilterCheckbox({
   checked,
@@ -42,17 +43,23 @@ function FilterCheckbox({
 
 export function ShopFilters({ meta, filters, onChange, loadingMeta }: ShopFiltersProps) {
   const [expanded, setExpanded] = useState<Record<SectionId, boolean>>({
-    clase: true,
-    categoria: true,
+    linea: true,
+    uso: true,
+    prenda: true,
     color: false,
     precio: true,
     stock: true,
   });
   const [colorSearch, setColorSearch] = useState("");
 
-  const categorias = useMemo(
-    () => (meta ? categoriasForClase(meta, filters.classFamily) : []),
-    [meta, filters.classFamily],
+  const usos = useMemo(
+    () => (meta ? usosForLinea(meta, filters.filtro1) : []),
+    [meta, filters.filtro1],
+  );
+
+  const prendas = useMemo(
+    () => (meta ? prendasForLinea(meta, filters.filtro1) : []),
+    [meta, filters.filtro1],
   );
 
   const colores = useMemo(() => {
@@ -76,8 +83,10 @@ export function ShopFilters({ meta, filters, onChange, loadingMeta }: ShopFilter
   };
 
   const hasActiveFilters =
-    filters.classFamily ||
-    filters.categories.length > 0 ||
+    filters.filtro1 ||
+    filters.filtro2.length > 0 ||
+    filters.filtro3.length > 0 ||
+    filters.nombre.trim() ||
     filters.colors.length > 0 ||
     filters.inStock ||
     filters.precioMin ||
@@ -104,48 +113,55 @@ export function ShopFilters({ meta, filters, onChange, loadingMeta }: ShopFilter
       )}
 
       <nav className="flex flex-col">
-        {/* Clase */}
         <div className="border-b border-slate-100">
           <button
             type="button"
-            onClick={() => toggleSection("clase")}
+            onClick={() => toggleSection("linea")}
             className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"
           >
-            <span>Clase / familia</span>
-            {expanded.clase ? <ChevronUp className="h-4 w-4 text-slate-500" /> : <ChevronDown className="h-4 w-4 text-slate-500" />}
+            <span>Línea</span>
+            {expanded.linea ? (
+              <ChevronUp className="h-4 w-4 text-slate-500" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-slate-500" />
+            )}
           </button>
-          {expanded.clase && (
+          {expanded.linea && (
             <ul className="max-h-48 space-y-2 overflow-y-auto px-4 pb-3">
               <li>
                 <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-600">
                   <input
                     type="radio"
-                    name="shop-clase"
-                    checked={!filters.classFamily}
-                    onChange={() => update({ classFamily: "", categories: [] })}
+                    name="shop-linea"
+                    checked={!filters.filtro1}
+                    onChange={() => update({ filtro1: "", filtro2: [], filtro3: [], nombre: "" })}
                     className="h-4 w-4 border-slate-300 text-red-600 focus:ring-red-500"
                   />
                   <span>Todas</span>
                 </label>
               </li>
-              {(meta?.clases ?? []).map((clase) => (
-                <li key={clase}>
+              {(meta?.lineas ?? []).map((linea) => (
+                <li key={linea}>
                   <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-600">
                     <input
                       type="radio"
-                      name="shop-clase"
-                      checked={filters.classFamily === clase}
+                      name="shop-linea"
+                      checked={filters.filtro1 === linea}
                       onChange={() =>
                         update({
-                          classFamily: clase,
-                          categories: filters.categories.filter((c) =>
-                            (meta?.categoriasByClase[clase] ?? []).includes(c),
+                          filtro1: linea,
+                          filtro2: filters.filtro2.filter((u) =>
+                            (meta?.usosByLinea[linea] ?? []).includes(u),
                           ),
+                          filtro3: filters.filtro3.filter((p) =>
+                            (meta?.prendasByLinea[linea] ?? []).includes(p),
+                          ),
+                          nombre: "",
                         })
                       }
                       className="h-4 w-4 border-slate-300 text-red-600 focus:ring-red-500"
                     />
-                    <span>{clase}</span>
+                    <span>{linea}</span>
                   </label>
                 </li>
               ))}
@@ -153,28 +169,31 @@ export function ShopFilters({ meta, filters, onChange, loadingMeta }: ShopFilter
           )}
         </div>
 
-        {/* Categoría */}
         <div className="border-b border-slate-100">
           <button
             type="button"
-            onClick={() => toggleSection("categoria")}
+            onClick={() => toggleSection("uso")}
             className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"
           >
-            <span>Categoría</span>
-            {expanded.categoria ? <ChevronUp className="h-4 w-4 text-slate-500" /> : <ChevronDown className="h-4 w-4 text-slate-500" />}
+            <span>Uso</span>
+            {expanded.uso ? (
+              <ChevronUp className="h-4 w-4 text-slate-500" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-slate-500" />
+            )}
           </button>
-          {expanded.categoria && (
+          {expanded.uso && (
             <ul className="max-h-48 space-y-2 overflow-y-auto px-4 pb-3">
-              {categorias.length === 0 ? (
-                <li className="text-sm text-slate-500">Sin categorías</li>
+              {usos.length === 0 ? (
+                <li className="text-sm text-slate-500">Sin usos</li>
               ) : (
-                categorias.map((cat) => (
-                  <li key={cat}>
+                usos.map((uso) => (
+                  <li key={uso}>
                     <FilterCheckbox
-                      checked={filters.categories.includes(cat)}
-                      label={cat}
+                      checked={filters.filtro2.includes(uso)}
+                      label={uso}
                       onChange={(checked) =>
-                        update({ categories: toggleInList(filters.categories, cat, checked) })
+                        update({ filtro2: toggleInList(filters.filtro2, uso, checked) })
                       }
                     />
                   </li>
@@ -184,7 +203,40 @@ export function ShopFilters({ meta, filters, onChange, loadingMeta }: ShopFilter
           )}
         </div>
 
-        {/* Color */}
+        <div className="border-b border-slate-100">
+          <button
+            type="button"
+            onClick={() => toggleSection("prenda")}
+            className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"
+          >
+            <span>Prenda</span>
+            {expanded.prenda ? (
+              <ChevronUp className="h-4 w-4 text-slate-500" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-slate-500" />
+            )}
+          </button>
+          {expanded.prenda && (
+            <ul className="max-h-48 space-y-2 overflow-y-auto px-4 pb-3">
+              {prendas.length === 0 ? (
+                <li className="text-sm text-slate-500">Sin prendas</li>
+              ) : (
+                prendas.map((prenda) => (
+                  <li key={prenda}>
+                    <FilterCheckbox
+                      checked={filters.filtro3.includes(prenda)}
+                      label={prenda}
+                      onChange={(checked) =>
+                        update({ filtro3: toggleInList(filters.filtro3, prenda, checked) })
+                      }
+                    />
+                  </li>
+                ))
+              )}
+            </ul>
+          )}
+        </div>
+
         <div className="border-b border-slate-100">
           <button
             type="button"
@@ -192,7 +244,11 @@ export function ShopFilters({ meta, filters, onChange, loadingMeta }: ShopFilter
             className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"
           >
             <span>Color</span>
-            {expanded.color ? <ChevronUp className="h-4 w-4 text-slate-500" /> : <ChevronDown className="h-4 w-4 text-slate-500" />}
+            {expanded.color ? (
+              <ChevronUp className="h-4 w-4 text-slate-500" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-slate-500" />
+            )}
           </button>
           {expanded.color && (
             <div className="space-y-2 px-4 pb-3">
@@ -216,14 +272,15 @@ export function ShopFilters({ meta, filters, onChange, loadingMeta }: ShopFilter
                   </li>
                 ))}
                 {colores.length > 80 && (
-                  <li className="text-xs text-slate-500">Refina la búsqueda para ver más colores.</li>
+                  <li className="text-xs text-slate-500">
+                    Refina la búsqueda para ver más colores.
+                  </li>
                 )}
               </ul>
             </div>
           )}
         </div>
 
-        {/* Precio */}
         <div className="border-b border-slate-100">
           <button
             type="button"
@@ -231,7 +288,11 @@ export function ShopFilters({ meta, filters, onChange, loadingMeta }: ShopFilter
             className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"
           >
             <span>Precio</span>
-            {expanded.precio ? <ChevronUp className="h-4 w-4 text-slate-500" /> : <ChevronDown className="h-4 w-4 text-slate-500" />}
+            {expanded.precio ? (
+              <ChevronUp className="h-4 w-4 text-slate-500" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-slate-500" />
+            )}
           </button>
           {expanded.precio && (
             <div className="grid grid-cols-2 gap-2 px-4 pb-3">
@@ -261,7 +322,6 @@ export function ShopFilters({ meta, filters, onChange, loadingMeta }: ShopFilter
           )}
         </div>
 
-        {/* Stock */}
         <div className="border-b border-slate-100 px-4 py-3">
           <FilterCheckbox
             checked={filters.inStock}

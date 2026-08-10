@@ -3,27 +3,27 @@
 import Link from "next/link";
 import {
   chunkCategorias,
-  shopUrlForClase,
+  shopUrlForLinea,
   type NavCatalogItem,
 } from "@/lib/catalog";
 
 type NavMegaMenuProps = {
   item: NavCatalogItem;
-  classFamily: string;
-  categorias: string[];
+  linea: string;
+  productos: string[];
   loading?: boolean;
   onClose: () => void;
 };
 
 export function NavMegaMenu({
   item,
-  classFamily,
-  categorias,
+  linea,
+  productos,
   loading,
   onClose,
 }: NavMegaMenuProps) {
-  const columns = chunkCategorias(categorias);
-  const verTodoHref = shopUrlForClase(classFamily);
+  const columns = chunkCategorias(productos);
+  const verTodoHref = shopUrlForLinea(linea);
 
   return (
     <div
@@ -43,23 +43,23 @@ export function NavMegaMenu({
         </div>
 
         {loading ? (
-          <p className="py-4 text-sm text-slate-500">Cargando categorías…</p>
+          <p className="py-4 text-sm text-slate-500">Cargando productos…</p>
         ) : columns.length === 0 ? (
           <p className="py-4 text-sm text-slate-500">
-            No hay categorías disponibles para {item.label}.
+            No hay productos disponibles para {item.label}.
           </p>
         ) : (
           <div className="grid grid-cols-2 gap-x-10 gap-y-4 sm:grid-cols-3 lg:grid-cols-6">
             {columns.map((column, colIndex) => (
               <ul key={colIndex} className="space-y-2.5">
-                {column.map((categoria) => (
-                  <li key={categoria}>
+                {column.map((producto) => (
+                  <li key={producto}>
                     <Link
-                      href={shopUrlForClase(classFamily, categoria)}
+                      href={shopUrlForLinea(linea, producto)}
                       onClick={onClose}
                       className="text-sm text-slate-700 transition-colors hover:text-red-600"
                     >
-                      {categoria}
+                      {producto}
                     </Link>
                   </li>
                 ))}

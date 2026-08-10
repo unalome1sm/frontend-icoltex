@@ -12,6 +12,7 @@ export type GroupedProductVariant = {
   mongoId: string;
   codigo: string;
   colorLabel: string;
+  colorHex?: string;
   codigoTono?: string;
   itemNameCompleto: string;
   stock: number;
@@ -32,6 +33,11 @@ export type GroupedProductRow = {
   nombreVitrina: string;
   claseFamilia?: string;
   categoria?: string;
+  descripcionCorta?: string;
+  descripcionLarga?: string;
+  caracteristicas?: string;
+  usos?: string;
+  cuidados?: string;
   imageUrls?: string[];
   filtros?: CatalogVitrinaFiltros[];
   variantes: GroupedProductVariant[];
@@ -46,6 +52,11 @@ export type CatalogSortOption = "relevance" | "price-asc" | "price-desc" | "name
 export type GroupedProductsQuery = {
   page?: number;
   limit?: number;
+  filtro1?: string;
+  filtro2?: string[];
+  filtro3?: string[];
+  nombre?: string;
+  /** @deprecated Legacy admin path */
   category?: string;
   categories?: string[];
   classFamily?: string;
@@ -110,6 +121,10 @@ export async function fetchGroupedProductsPage(
   const sp = new URLSearchParams();
   if (params.page != null) sp.set("page", String(params.page));
   if (params.limit != null) sp.set("limit", String(params.limit));
+  if (params.filtro1) sp.set("filtro1", params.filtro1);
+  if (params.filtro2?.length) sp.set("filtro2", params.filtro2.join(","));
+  if (params.filtro3?.length) sp.set("filtro3", params.filtro3.join(","));
+  if (params.nombre) sp.set("nombre", params.nombre);
   if (params.classFamily) sp.set("classFamily", params.classFamily);
   if (params.categories?.length) sp.set("categories", params.categories.join(","));
   else if (params.category) sp.set("category", params.category);
@@ -153,7 +168,7 @@ export function groupedRowToCardData(row: GroupedProductRow): ProductCardData {
     id: row.groupId,
     href: `/shop/${row.groupId}`,
     nombre: row.nombreVitrina,
-    descripcion: first?.caracteristica,
+    descripcion: row.descripcionCorta || first?.caracteristica,
     precioMetro: precio,
     colores: colores || undefined,
     imageUrls: imageUrls.length ? imageUrls : undefined,
@@ -181,35 +196,29 @@ function excludeCurrentGroup(
   return groups.filter((g) => g.groupId !== currentGroupId);
 }
 
-/** Productos relacionados para detalle agrupado: categoría → clase → catálogo amplio. */
+function firstFiltro1(group: GroupedProductRow): string | undefined {
+  for (const f of group.filtros ?? []) {
+    const v = f.filtro1?.[0]?.trim();
+    if (v) return v;
+  }
+  return undefined;
+}
+
+/** Productos relacionados: misma línea comercial → catálogo amplio. */
 export async function fetchRelatedGroupCards(
   current: GroupedProductRow,
   limit = 8,
 ): Promise<ProductCardData[]> {
   let candidates: GroupedProductRow[] = [];
+  const linea = firstFiltro1(current);
 
-  if (current.categoria) {
-    const byCategory = await fetchGroupedProductsPage({
-      category: current.categoria,
+  if (linea) {
+    const byLinea = await fetchGroupedProductsPage({
+      filtro1: linea,
       limit: RELATED_FETCH_LIMIT,
       page: 1,
     });
-    candidates = excludeCurrentGroup(byCategory.groups ?? [], current.groupId);
-    if (candidates.length >= RELATED_MIN_BEFORE_FALLBACK) {
-      return candidates.slice(0, limit).map(groupedRowToCardData);
-    }
-  }
-
-  if (current.claseFamilia) {
-    const byClass = await fetchGroupedProductsPage({
-      classFamily: current.claseFamilia,
-      limit: RELATED_FETCH_LIMIT,
-      page: 1,
-    });
-    const classList = excludeCurrentGroup(byClass.groups ?? [], current.groupId);
-    if (classList.length > candidates.length) {
-      candidates = classList;
-    }
+    candidates = excludeCurrentGroup(byLinea.groups ?? [], current.groupId);
     if (candidates.length >= RELATED_MIN_BEFORE_FALLBACK) {
       return candidates.slice(0, limit).map(groupedRowToCardData);
     }

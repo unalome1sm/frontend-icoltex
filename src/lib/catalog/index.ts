@@ -1,5 +1,6 @@
 export * from "./groupedCatalog";
 export * from "./colorSwatches";
+export * from "./variantColorGroups";
 export * from "./navCatalog";
 export {
   fetchItemCharacteristics,
@@ -19,4 +20,6 @@ export {
   fetchCatalogFilterMeta,
   fetchColorLabelAudit,
   categoriasForClase,
+  usosForLinea,
+  prendasForLinea,
 } from "./shopFilters";

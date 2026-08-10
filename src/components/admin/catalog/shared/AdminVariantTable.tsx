@@ -50,6 +50,7 @@ export function AdminVariantTable({ variantes }: Props) {
             <th className="px-3 py-3">Img</th>
             <th className="px-3 py-3">Código</th>
             <th className="px-3 py-3">Color</th>
+            <th className="px-3 py-3">HEX</th>
             <th className="px-3 py-3">Nombre completo</th>
             <th className="px-3 py-3 text-right">Stock</th>
             <th className="px-3 py-3">U.M.</th>
@@ -73,6 +74,20 @@ export function AdminVariantTable({ variantes }: Props) {
                 </td>
                 <td className="px-3 py-2 font-mono text-xs">{v.codigo}</td>
                 <td className="px-3 py-2 text-slate-800">{v.colorLabel}</td>
+                <td className="px-3 py-2">
+                  {v.colorHex ? (
+                    <span className="inline-flex items-center gap-2 font-mono text-xs text-slate-700">
+                      <span
+                        className="inline-block h-4 w-4 rounded-full border border-slate-200"
+                        style={{ backgroundColor: v.colorHex }}
+                        title={v.colorHex}
+                      />
+                      {v.colorHex}
+                    </span>
+                  ) : (
+                    <span className="text-slate-400">—</span>
+                  )}
+                </td>
                 <td className="max-w-[200px] truncate px-3 py-2 text-slate-700" title={v.itemNameCompleto}>
                   {v.itemNameCompleto}
                 </td>

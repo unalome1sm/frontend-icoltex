@@ -18,6 +18,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const title = data.tituloVitrina ?? data.product.nombre;
   const description =
+    data.product.descripcionCorta?.trim() ||
+    data.product.caracteristicasGrupo?.trim() ||
     data.product.caracteristica?.trim() ||
     `Compra ${title} en Icoltex. Telas de alta calidad con envío en Colombia.`;
 
@@ -38,13 +40,23 @@ export default async function ShopProductPage({ params }: PageProps) {
   }
 
   const heading = data.tituloVitrina ?? data.product.nombre;
+  const lineaComercial = data.grouped?.filtros
+    ?.flatMap((f) => f.filtro1 ?? [])
+    .find((v) => v?.trim());
   const breadcrumbItems = [
     { name: "Tienda", path: "/shop" },
-    ...(data.product.claseFamilia
-      ? [{ name: data.product.claseFamilia, path: `/shop?clase=${encodeURIComponent(data.product.claseFamilia)}` }]
+    ...(lineaComercial
+      ? [{ name: lineaComercial, path: `/shop?linea=${encodeURIComponent(lineaComercial)}` }]
       : []),
-    ...(data.product.categoria
-      ? [{ name: data.product.categoria, path: `/shop?categorias=${encodeURIComponent(data.product.categoria)}` }]
+    ...(data.tituloVitrina && data.tituloVitrina !== heading
+      ? [
+          {
+            name: data.tituloVitrina,
+            path: lineaComercial
+              ? `/shop?linea=${encodeURIComponent(lineaComercial)}&nombre=${encodeURIComponent(data.tituloVitrina)}`
+              : `/shop?nombre=${encodeURIComponent(data.tituloVitrina)}`,
+          },
+        ]
       : []),
     { name: heading },
   ];
@@ -55,12 +67,15 @@ export default async function ShopProductPage({ params }: PageProps) {
         product={{
           id: data.canonicalId,
           name: heading,
-          description: data.product.caracteristica,
+          description:
+            data.product.descripcionCorta ||
+            data.product.caracteristicasGrupo ||
+            data.product.caracteristica,
           imageUrls: data.product.imageUrls?.map((url) => toAbsoluteImageUrl(url) ?? url),
           price: data.product.precioMetro,
           inStock: data.product.stock > 0,
           sku: data.product.codigo,
-          category: data.product.categoria,
+          category: data.product.lineaComercial || data.product.categoria,
         }}
         breadcrumbs={breadcrumbItems}
       />

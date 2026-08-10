@@ -26,8 +26,10 @@ function filtersToQuery(filters: ShopFilterState, page: number) {
   return {
     page,
     limit: PAGE_SIZE,
-    classFamily: filters.classFamily || undefined,
-    categories: filters.categories.length ? filters.categories : undefined,
+    filtro1: filters.filtro1 || undefined,
+    filtro2: filters.filtro2.length ? filters.filtro2 : undefined,
+    filtro3: filters.filtro3.length ? filters.filtro3 : undefined,
+    nombre: filters.nombre.trim() || undefined,
     colors: filters.colors.length ? filters.colors : undefined,
     inStock: filters.inStock || undefined,
     precioMin: precioMin != null && !Number.isNaN(precioMin) ? precioMin : undefined,
