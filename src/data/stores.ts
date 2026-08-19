@@ -6,6 +6,7 @@ export type Store = {
   city: string;
   status?: string;
   googleMapsUrl?: string;
+  bannerUrl?: string;
   videoGuideUrl?: string;
   /** Coordenadas opcionales; si faltan, el mapa geocodifica la dirección */
   lat?: number;
@@ -20,6 +21,8 @@ export const STORES: Store[] = [
     address: "Cl. 42b Sur #52b-16",
     city: "bogota",
     googleMapsUrl: "https://share.google/gIqpy1U9cUnRvW5TD",
+    bannerUrl:
+      "https://drive.google.com/file/d/1v5jjEGkHMrDkyX-5b33ku3CGpMVB6lZs/view?usp=drive_link",
     videoGuideUrl:
       "https://drive.google.com/file/d/1sz0QD5MuJUT8_pJdWNE_07UTeP_SyHqx/preview",
   },
@@ -30,6 +33,8 @@ export const STORES: Store[] = [
     address: "Cra. 52c #41-36 Sur",
     city: "bogota",
     googleMapsUrl: "https://share.google/zT2P4XQw8r8FGrF8H",
+    bannerUrl:
+      "https://drive.google.com/file/d/1aTIJ7BfdXCV__XjK6MFVlQ9rbUhYGsV0/view?usp=sharing",
     videoGuideUrl:
       "https://drive.google.com/file/d/1sz0QD5MuJUT8_pJdWNE_07UTeP_SyHqx/preview",
   },
@@ -40,6 +45,8 @@ export const STORES: Store[] = [
     address: "Cl. 3 Sur #12A-18",
     city: "bogota",
     googleMapsUrl: "https://share.google/7Wc2T75GQy3saLPwn",
+    bannerUrl:
+      "https://drive.google.com/file/d/1tE-H2haFUvYgPCYWDypbVYwvxr-QYXXL/view?usp=drive_link",
     videoGuideUrl:
       "https://drive.google.com/file/d/10d7zYA4qZ028K90gpuv9sDCVkDgvRo_o/preview",
   },
@@ -50,6 +57,8 @@ export const STORES: Store[] = [
     address: "Cra. 24C #17-48 Sur",
     city: "bogota",
     googleMapsUrl: "https://share.google/c1H0AJlDWcqEhTnHr",
+    bannerUrl:
+      "https://drive.google.com/file/d/1hYPxbzyVQfSicAhVXWLCfwymy6IF3WNb/view?usp=drive_link",
     videoGuideUrl:
       "https://drive.google.com/file/d/1ZeoTEdraVhUxfu48uWc1AbvO0C4_7ExV/preview",
   },
@@ -60,6 +69,8 @@ export const STORES: Store[] = [
     address: "Cra. 13 #17-60",
     city: "bogota",
     googleMapsUrl: "https://share.google/7HrYtW0Rjs3VpvRZ2",
+    bannerUrl:
+      "https://drive.google.com/file/d/1ZeLCyylmk2daVhPAh2AcKwcXxcz9M1Ds/view?usp=drive_link",
     videoGuideUrl:
       "https://drive.google.com/file/d/1ggy5yRZG-Z9QtLLvuVShX7NQSO4bRoU6/preview",
   },
@@ -70,6 +81,8 @@ export const STORES: Store[] = [
     address: "Cl. 49 #53-76",
     city: "medellin",
     googleMapsUrl: "https://share.google/iDnue3illCto8FtnI",
+    bannerUrl:
+      "https://drive.google.com/file/d/1OP78GO8WNPS7jVa7B9fhG9Etf6XG6409/view?usp=drive_link",
   },
   {
     id: "medellin-ayacucho",
@@ -78,6 +91,8 @@ export const STORES: Store[] = [
     address: "Cl. 49 #54-70",
     city: "medellin",
     googleMapsUrl: "https://share.google/NfOSPVRi4aWYuU7bL",
+    bannerUrl:
+      "https://drive.google.com/file/d/1QcQVemgu7kCVQ_SMZDh0BTfhhELAro0O/view?usp=drive_link",
   },
   {
     id: "medellin-la-54",
@@ -86,6 +101,8 @@ export const STORES: Store[] = [
     address: "Cra. 54 #48-75",
     city: "medellin",
     googleMapsUrl: "https://share.google/gNicvGnY8v9jG2nia",
+    bannerUrl:
+      "https://drive.google.com/file/d/1tEoz3nzwwbK65M-2Ct1sVKAxpbhRyAVx/view?usp=drive_link",
   },
   {
     id: "cali-principal",
@@ -94,6 +111,8 @@ export const STORES: Store[] = [
     address: "Cra. 8 #15-32",
     city: "cali",
     googleMapsUrl: "https://share.google/67gYADYVc2C6shdoH",
+    bannerUrl:
+      "https://drive.google.com/file/d/11i9TmrFuw3v8uu95p7kttM4h9Hk4chMS/view?usp=drive_link",
     videoGuideUrl:
       "https://drive.google.com/file/d/17mtxA3BFxjKbh0V5jnvcqQdWSmdbRAmF/preview",
   },
@@ -104,6 +123,8 @@ export const STORES: Store[] = [
     address: "Cra. 7 #11-1",
     city: "cali",
     googleMapsUrl: "https://share.google/75TC30CHOwFVBLQTe",
+    bannerUrl:
+      "https://drive.google.com/file/d/1ojrIHU9uv6j9f74zMwXUf_NTNTI5_7th/view?usp=drive_link",
     videoGuideUrl:
       "https://drive.google.com/file/d/1liLMg28WDxO0JLQKb5GLahMbRWvxYqG-/preview",
   },
@@ -114,6 +135,8 @@ export const STORES: Store[] = [
     address: "Cl. 32 #43-86",
     city: "barranquilla",
     googleMapsUrl: "https://share.google/wrG5JGhqQC1UsaKOl",
+    bannerUrl:
+      "https://drive.google.com/file/d/1OMEjm8qEAOn6l9xLX5GtH6nQjcBDXrLy/view?usp=drive_link",
   },
   {
     id: "pereira-principal",
@@ -122,6 +145,8 @@ export const STORES: Store[] = [
     address: "Cra. 6 #14-31",
     city: "pereira",
     googleMapsUrl: "https://share.google/tbPtgSg3q3Wo7pASa",
+    bannerUrl:
+      "https://drive.google.com/file/d/1bwJvkoaZKKYOZWX3UTHA3iUBA-JJF_3t/view?usp=drive_link",
     videoGuideUrl:
       "https://drive.google.com/file/d/1Ny4KEqTtulCeG_vBYGg4EjhrQvCRpAZS/preview",
   },

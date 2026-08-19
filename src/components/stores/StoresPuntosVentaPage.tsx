@@ -12,14 +12,7 @@ import {
   type Store,
 } from "@/data/stores";
 import { StoresMap } from "@/components/stores/StoresMap";
-import { getImageDisplayUrl } from "@/lib/products";
-
-const STORE_HERO_DRIVE_ID = "1a7HjuSK5LOBNiMQ-cFc3Avd2Ix47EoFg";
-
-/** Shared banner for all stores until each store has its own photo. */
-const HERO_IMAGE = getImageDisplayUrl(
-  `https://drive.google.com/uc?export=view&id=${STORE_HERO_DRIVE_ID}`,
-);
+import { getImageDisplayUrl, toDirectImageUrl } from "@/lib/products";
 
 const CITY_FILTERS = CITIES.filter((c) => c.value !== "");
 
@@ -183,6 +176,11 @@ export function StoresPuntosVentaPage() {
     [selectedStore],
   );
 
+  const heroImage = useMemo(() => {
+    if (!selectedStore?.bannerUrl) return "";
+    return getImageDisplayUrl(toDirectImageUrl(selectedStore.bannerUrl));
+  }, [selectedStore?.bannerUrl]);
+
   useEffect(() => {
     if (filteredStores.length === 0) {
       setSelectedStoreId(null);
@@ -276,23 +274,25 @@ export function StoresPuntosVentaPage() {
         {selectedStore ? (
           <>
             {/* Imagen destacada — completa, sin recorte */}
-            <div className="relative mt-8 overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
-              <div className="flex w-full items-center justify-center">
-                <Image
-                  src={HERO_IMAGE}
-                  alt={`Punto de venta Icoltex — ${selectedStore.name}, ${cityLabel(selectedStore.city)}`}
-                  width={1600}
-                  height={1600}
-                  className="h-auto w-full max-h-[320px] object-contain sm:max-h-[400px] md:max-h-[460px]"
-                  sizes="(max-width: 1280px) 100vw, 1280px"
-                  priority
-                  unoptimized
-                />
+            {heroImage ? (
+              <div className="relative mt-8 overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+                <div className="flex w-full items-center justify-center">
+                  <Image
+                    src={heroImage}
+                    alt={`Punto de venta Icoltex — ${selectedStore.name}, ${cityLabel(selectedStore.city)}`}
+                    width={1600}
+                    height={1600}
+                    className="h-auto w-full max-h-[320px] object-contain sm:max-h-[400px] md:max-h-[460px]"
+                    sizes="(max-width: 1280px) 100vw, 1280px"
+                    priority
+                    unoptimized
+                  />
+                </div>
+                <span className="absolute bottom-4 right-4 rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-red-600 shadow-md">
+                  {cityLabel(selectedStore.city)}
+                </span>
               </div>
-              <span className="absolute bottom-4 right-4 rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-red-600 shadow-md">
-                {cityLabel(selectedStore.city)}
-              </span>
-            </div>
+            ) : null}
 
             {/* Detalle + mapa */}
             <div className="mt-8 grid gap-8 lg:grid-cols-2 lg:items-start">
