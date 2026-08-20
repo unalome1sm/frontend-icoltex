@@ -2,6 +2,8 @@ import {
   DEFAULT_SHOP_FILTERS,
   shopFiltersToSearchParams,
   type CatalogFilterMeta,
+  usosForLinea,
+  prendasForLinea,
 } from "./shopFilters";
 
 /** Ítems del navbar según Figma (orden fijo). */
@@ -16,6 +18,30 @@ export const NAV_CATALOG_ITEMS = [
 
 export type NavCatalogItem = (typeof NAV_CATALOG_ITEMS)[number];
 
+/**
+ * Valores canónicos de filtro1 en JSON/SAP.
+ * Tras sync (POST /api/sync/catalog-vitrina), el mega menú usa estos keys en filter-meta.
+ */
+export const NAV_FILTRO1_BY_ID = {
+  antifluidos: "ANTIFLUIDOS",
+  dotacion: "DOTACION",
+  moda: "MODA",
+  hogar: "HOGAR Y DECORACION",
+  publicidad: "PUBLICIDAD",
+  deportivo: "DEPORTIVO",
+} as const;
+
+export type NavCatalogId = keyof typeof NAV_FILTRO1_BY_ID;
+
+/** Mega menú: usos (filtro2) y prendas (filtro3) por línea comercial. */
+export type NavMegaMenuLink = {
+  label: string;
+  kind: "uso" | "prenda";
+};
+
+const NAV_ITEMS_PER_COLUMN = 5;
+const NAV_MAX_COLUMNS = 4;
+
 const ITEMS_PER_COLUMN = 5;
 const MAX_COLUMNS = 6;
 
@@ -28,23 +54,43 @@ function normalizeNavKey(value: string): string {
     .replace(/\s+/g, " ");
 }
 
+function canonicalFiltro1ForNavLabel(label: string): string | undefined {
+  const item = NAV_CATALOG_ITEMS.find(
+    (entry) => normalizeNavKey(entry.label) === normalizeNavKey(label),
+  );
+  if (!item) return undefined;
+  return NAV_FILTRO1_BY_ID[item.id];
+}
+
+function findLineaInMeta(meta: CatalogFilterMeta, candidate: string): string | undefined {
+  const norm = normalizeNavKey(candidate);
+  const exact = meta.lineas.find((linea) => normalizeNavKey(linea) === norm);
+  if (exact) return exact;
+
+  return meta.lineas.find((linea) => {
+    const lineaNorm = normalizeNavKey(linea);
+    return lineaNorm.includes(norm) || norm.includes(lineaNorm);
+  });
+}
+
 /** Resuelve el label del menú al valor real de `filtro1` / línea en el catálogo. */
 export function resolveLineaForNav(
   label: string,
   meta: CatalogFilterMeta | null,
 ): string {
-  if (!meta?.lineas?.length) return label;
+  const canonical = canonicalFiltro1ForNavLabel(label);
 
-  const norm = normalizeNavKey(label);
-  const exact = meta.lineas.find((c) => normalizeNavKey(c) === norm);
-  if (exact) return exact;
+  if (meta?.lineas?.length) {
+    if (canonical) {
+      const fromCanonical = findLineaInMeta(meta, canonical);
+      if (fromCanonical) return fromCanonical;
+    }
 
-  const contains = meta.lineas.find((c) => {
-    const cn = normalizeNavKey(c);
-    return cn.includes(norm) || norm.includes(cn);
-  });
-  if (contains) return contains;
+    const fromLabel = findLineaInMeta(meta, label);
+    if (fromLabel) return fromLabel;
+  }
 
+  if (canonical) return canonical;
   return label;
 }
 
@@ -83,6 +129,62 @@ export function shopUrlForLinea(linea: string, nombreVitrina?: string): string {
   return qs ? `/shop?${qs}` : "/shop";
 }
 
+export function shopUrlForUso(linea: string, uso: string): string {
+  const filters = {
+    ...DEFAULT_SHOP_FILTERS,
+    filtro1: linea,
+    filtro2: [uso.trim()],
+  };
+  const qs = shopFiltersToSearchParams(filters).toString();
+  return qs ? `/shop?${qs}` : "/shop";
+}
+
+export function shopUrlForPrenda(linea: string, prenda: string): string {
+  const filters = {
+    ...DEFAULT_SHOP_FILTERS,
+    filtro1: linea,
+    filtro3: [prenda.trim()],
+  };
+  const qs = shopFiltersToSearchParams(filters).toString();
+  return qs ? `/shop?${qs}` : "/shop";
+}
+
+/** Usos + prendas de una línea, en el orden del mega menú (Figma). */
+export function navMegaMenuLinksForLinea(
+  label: string,
+  meta: CatalogFilterMeta | null,
+): NavMegaMenuLink[] {
+  if (!meta) return [];
+  const linea = resolveLineaForNav(label, meta);
+  const usos = usosForLinea(meta, linea);
+  const prendas = prendasForLinea(meta, linea);
+  return [
+    ...usos.map((entry) => ({ label: entry, kind: "uso" as const })),
+    ...prendas.map((entry) => ({ label: entry, kind: "prenda" as const })),
+  ];
+}
+
+export function navMegaMenuHref(linea: string, link: NavMegaMenuLink): string {
+  return link.kind === "uso"
+    ? shopUrlForUso(linea, link.label)
+    : shopUrlForPrenda(linea, link.label);
+}
+
+/** Divide links del mega menú en columnas (máx. 4 × 5 ítems). */
+export function chunkNavMegaMenuLinks(links: NavMegaMenuLink[]): NavMegaMenuLink[][] {
+  if (links.length === 0) return [];
+
+  const cols: NavMegaMenuLink[][] = [];
+  for (
+    let i = 0;
+    i < links.length && cols.length < NAV_MAX_COLUMNS;
+    i += NAV_ITEMS_PER_COLUMN
+  ) {
+    cols.push(links.slice(i, i + NAV_ITEMS_PER_COLUMN));
+  }
+  return cols;
+}
+
 /** @deprecated Use shopUrlForLinea */
 export function shopUrlForClase(clase: string, categoria?: string): string {
   return shopUrlForLinea(clase, categoria);
@@ -115,8 +217,10 @@ export function isNavItemActive(
 ): boolean {
   if (pathname !== "/shop" || !lineaParam) return false;
   const resolved = resolveLineaForNav(label, meta);
+  const canonical = canonicalFiltro1ForNavLabel(label);
   return (
     normalizeNavKey(lineaParam) === normalizeNavKey(resolved) ||
-    normalizeNavKey(lineaParam) === normalizeNavKey(label)
+    normalizeNavKey(lineaParam) === normalizeNavKey(label) ||
+    (canonical != null && normalizeNavKey(lineaParam) === normalizeNavKey(canonical))
   );
 }

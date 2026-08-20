@@ -2,15 +2,17 @@
 
 import Link from "next/link";
 import {
-  chunkCategorias,
+  chunkNavMegaMenuLinks,
+  navMegaMenuHref,
   shopUrlForLinea,
   type NavCatalogItem,
+  type NavMegaMenuLink,
 } from "@/lib/catalog";
 
 type NavMegaMenuProps = {
   item: NavCatalogItem;
   linea: string;
-  productos: string[];
+  links: NavMegaMenuLink[];
   loading?: boolean;
   onClose: () => void;
 };
@@ -18,11 +20,11 @@ type NavMegaMenuProps = {
 export function NavMegaMenu({
   item,
   linea,
-  productos,
+  links,
   loading,
   onClose,
 }: NavMegaMenuProps) {
-  const columns = chunkCategorias(productos);
+  const columns = chunkNavMegaMenuLinks(links);
   const verTodoHref = shopUrlForLinea(linea);
 
   return (
@@ -43,23 +45,23 @@ export function NavMegaMenu({
         </div>
 
         {loading ? (
-          <p className="py-4 text-sm text-slate-500">Cargando productos…</p>
+          <p className="py-4 text-sm text-slate-500">Cargando filtros…</p>
         ) : columns.length === 0 ? (
           <p className="py-4 text-sm text-slate-500">
-            No hay productos disponibles para {item.label}.
+            No hay filtros disponibles para {item.label}.
           </p>
         ) : (
-          <div className="grid grid-cols-2 gap-x-10 gap-y-4 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="grid grid-cols-2 gap-x-10 gap-y-4 sm:grid-cols-3 lg:grid-cols-4">
             {columns.map((column, colIndex) => (
               <ul key={colIndex} className="space-y-2.5">
-                {column.map((producto) => (
-                  <li key={producto}>
+                {column.map((entry) => (
+                  <li key={`${entry.kind}:${entry.label}`}>
                     <Link
-                      href={shopUrlForLinea(linea, producto)}
+                      href={navMegaMenuHref(linea, entry)}
                       onClick={onClose}
                       className="text-sm text-slate-700 transition-colors hover:text-red-600"
                     >
-                      {producto}
+                      {entry.label}
                     </Link>
                   </li>
                 ))}

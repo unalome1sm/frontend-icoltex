@@ -10,7 +10,8 @@ import { NavMegaMenu } from "./NavMegaMenu";
 import {
   NAV_CATALOG_ITEMS,
   isNavItemActive,
-  productosForNavItem,
+  navMegaMenuHref,
+  navMegaMenuLinksForLinea,
   resolveLineaForNav,
   shopUrlForLinea,
   shopUrlForSearch,
@@ -222,7 +223,7 @@ export function Navbar() {
         <NavMegaMenu
           item={openItem}
           linea={resolveLineaForNav(openItem.label, meta)}
-          productos={productosForNavItem(openItem.label, meta)}
+          links={navMegaMenuLinksForLinea(openItem.label, meta)}
           loading={loadingMeta}
           onClose={() => setOpenMenuId(null)}
         />
@@ -260,7 +261,7 @@ export function Navbar() {
 
               const expanded = mobileExpandedId === item.id;
               const linea = resolveLineaForNav(item.label, meta);
-              const productos = productosForNavItem(item.label, meta);
+              const navLinks = navMegaMenuLinksForLinea(item.label, meta);
               const isActive = isNavItemActive(item.label, pathname, lineaParam, meta);
 
               return (
@@ -290,15 +291,17 @@ export function Navbar() {
                       </Link>
                       {loadingMeta ? (
                         <p className="py-2 text-sm text-slate-500">Cargando…</p>
+                      ) : navLinks.length === 0 ? (
+                        <p className="py-2 text-sm text-slate-500">Sin filtros disponibles</p>
                       ) : (
-                        productos.map((producto) => (
+                        navLinks.map((entry) => (
                           <Link
-                            key={producto}
-                            href={shopUrlForLinea(linea, producto)}
+                            key={`${entry.kind}:${entry.label}`}
+                            href={navMegaMenuHref(linea, entry)}
                             onClick={closeMenus}
                             className="block py-1.5 text-sm text-slate-600 hover:text-red-600"
                           >
-                            {producto}
+                            {entry.label}
                           </Link>
                         ))
                       )}
