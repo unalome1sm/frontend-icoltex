@@ -12,7 +12,6 @@ export const NAV_CATALOG_ITEMS = [
   { id: "hogar", label: "Hogar y Decoración" },
   { id: "publicidad", label: "Publicidad" },
   { id: "deportivo", label: "Deportivo" },
-  { id: "icoltex", label: "Icoltex", href: "/" },
 ] as const;
 
 export type NavCatalogItem = (typeof NAV_CATALOG_ITEMS)[number];

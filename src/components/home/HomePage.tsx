@@ -34,14 +34,10 @@ export function HomePage() {
         <NovedadesDestacadosSection />
         <div className="border-t border-slate-200" />
         <div className="space-y-0">
-          <section
-            className="relative left-1/2 w-screen max-w-none -translate-x-1/2"
-          >
+          <section className="-mx-4 sm:-mx-6 lg:-mx-8">
             <BannerRojoSection />
           </section>
-          <section
-            className="relative left-1/2 w-screen max-w-none -translate-x-1/2"
-          >
+          <section className="-mx-4 sm:-mx-6 lg:-mx-8">
             <NewsletterSection />
           </section>
         </div>

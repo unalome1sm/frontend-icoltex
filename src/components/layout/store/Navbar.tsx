@@ -17,7 +17,8 @@ import {
 } from "@/lib/catalog";
 import { fetchCatalogFilterMeta, type CatalogFilterMeta } from "@/lib/catalog";
 
-const NAV_LOGO_SRC = "/icons/LOGOS-03.svg";
+const NAV_LOGO_DESKTOP_SRC = "/icons/LOGOS-02.svg";
+const NAV_LOGO_MOBILE_SRC = "/icons/LOGOS-03.svg";
 
 export function Navbar() {
   const router = useRouter();
@@ -111,11 +112,11 @@ export function Navbar() {
             onClick={closeMenus}
           >
             <Image
-              src={NAV_LOGO_SRC}
+              src={NAV_LOGO_DESKTOP_SRC}
               alt="Icoltex"
               width={1920}
               height={1080}
-              className="m-0 block h-11 w-auto max-h-11 object-contain object-left p-0 max-w-[17rem] lg:max-w-[20rem]"
+              className="m-0 block h-12 w-auto max-h-12 object-contain object-left p-0 max-w-[18rem] lg:max-w-[22rem]"
               priority
               unoptimized
             />
@@ -130,7 +131,7 @@ export function Navbar() {
           onClick={closeMenus}
         >
           <Image
-            src={NAV_LOGO_SRC}
+            src={NAV_LOGO_MOBILE_SRC}
             alt="Icoltex"
             width={1920}
             height={1080}

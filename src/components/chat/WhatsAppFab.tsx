@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MessageCircle, X } from "lucide-react";
 import {
   WHATSAPP_CONTACTS,
   buildWhatsAppUrl,
 } from "./whatsappContacts";
+
+const WHATSAPP_FAB_MENU_ID = "whatsapp-fab-menu";
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
@@ -23,7 +25,6 @@ function WhatsAppIcon({ className }: { className?: string }) {
 export function WhatsAppFab() {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const menuId = useId();
 
   useEffect(() => {
     if (!open) return;
@@ -55,7 +56,7 @@ export function WhatsAppFab() {
       className="pointer-events-none fixed bottom-5 right-4 z-40 flex flex-col items-end gap-3 sm:bottom-6 sm:right-6"
     >
       <div
-        id={menuId}
+        id={WHATSAPP_FAB_MENU_ID}
         role="menu"
         aria-hidden={!open}
         className="pointer-events-none flex flex-col items-end gap-2.5"
@@ -104,7 +105,7 @@ export function WhatsAppFab() {
         type="button"
         aria-label={open ? "Cerrar chat" : "Chatear por WhatsApp"}
         aria-expanded={open}
-        aria-controls={menuId}
+        aria-controls={WHATSAPP_FAB_MENU_ID}
         onClick={() => setOpen((prev) => !prev)}
         className={[
           "pointer-events-auto relative flex h-14 w-14 items-center justify-center rounded-full",

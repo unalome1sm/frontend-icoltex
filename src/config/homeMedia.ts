@@ -53,9 +53,13 @@ export const HOME_BANNER_IMAGE_SLIDES: { driveOrImageUrl: string; alt: string }[
   // { driveOrImageUrl: "https://drive.google.com/file/d/XXXX/view", alt: "Colección" },
 ];
 
-/** Imagen del bloque rojo inferior en home (antes placeholder "Abstract Background"). */
+/** Imagen del bloque rojo inferior en home (desktop, lg+). */
 export const HOME_BANNER_ROJO_IMAGE_DRIVE_URL =
   "https://drive.google.com/file/d/1lSySVuhAYPHNspTUXDgJe8BHjX7TUSQA/view?usp=drive_link";
+
+/** Misma sección en mobile y tablet (< lg). */
+export const HOME_BANNER_ROJO_IMAGE_MOBILE_DRIVE_URL =
+  "https://drive.google.com/file/d/1M9GFidqXAnXD3YWMCtXNIfmc5NHTAyV9/view?usp=drive_link";
 
 /** Sub-banner (dos columnas): rutas en `public/media/banner/` — imagen (.webp, etc.) o video (.mov, .mp4). */
 export const HOME_TWO_PANEL_IMAGES: { left?: string; right?: string } = {
