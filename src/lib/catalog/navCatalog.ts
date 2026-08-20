@@ -6,18 +6,6 @@ import {
   prendasForLinea,
 } from "./shopFilters";
 
-/** Ítems del navbar según Figma (orden fijo). */
-export const NAV_CATALOG_ITEMS = [
-  { id: "antifluidos", label: "Antifluidos" },
-  { id: "dotacion", label: "Dotación" },
-  { id: "moda", label: "Moda" },
-  { id: "hogar", label: "Hogar y Decoración" },
-  { id: "publicidad", label: "Publicidad" },
-  { id: "deportivo", label: "Deportivo" },
-] as const;
-
-export type NavCatalogItem = (typeof NAV_CATALOG_ITEMS)[number];
-
 /**
  * Valores canónicos de filtro1 en JSON/SAP.
  * Tras sync (POST /api/sync/catalog-vitrina), el mega menú usa estos keys en filter-meta.
@@ -32,6 +20,33 @@ export const NAV_FILTRO1_BY_ID = {
 } as const;
 
 export type NavCatalogId = keyof typeof NAV_FILTRO1_BY_ID;
+
+export type NavCatalogMegaMenuItem = {
+  id: NavCatalogId;
+  label: string;
+};
+
+export type NavCatalogLinkItem = {
+  id: string;
+  label: string;
+  href: string;
+};
+
+export type NavCatalogItem = NavCatalogMegaMenuItem | NavCatalogLinkItem;
+
+export function isNavCatalogLinkItem(item: NavCatalogItem): item is NavCatalogLinkItem {
+  return "href" in item;
+}
+
+/** Ítems del navbar según Figma (orden fijo). */
+export const NAV_CATALOG_ITEMS = [
+  { id: "antifluidos", label: "Antifluidos" },
+  { id: "dotacion", label: "Dotación" },
+  { id: "moda", label: "Moda" },
+  { id: "hogar", label: "Hogar y Decoración" },
+  { id: "publicidad", label: "Publicidad" },
+  { id: "deportivo", label: "Deportivo" },
+] as const satisfies readonly NavCatalogMegaMenuItem[];
 
 /** Mega menú: usos (filtro2) y prendas (filtro3) por línea comercial. */
 export type NavMegaMenuLink = {

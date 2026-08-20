@@ -9,6 +9,7 @@ import { useCart } from "@/contexts/CartContext";
 import { NavMegaMenu } from "./NavMegaMenu";
 import {
   NAV_CATALOG_ITEMS,
+  isNavCatalogLinkItem,
   isNavItemActive,
   navMegaMenuHref,
   navMegaMenuLinksForLinea,
@@ -183,12 +184,11 @@ export function Navbar() {
           aria-label="Categorías"
         >
           {NAV_CATALOG_ITEMS.map((item) => {
-            const isExternal = "href" in item && item.href;
             const isOpen = openMenuId === item.id;
             const isActive =
               isOpen || isNavItemActive(item.label, pathname, lineaParam, meta);
 
-            if (isExternal) {
+            if (isNavCatalogLinkItem(item)) {
               return (
                 <Link
                   key={item.id}
@@ -255,7 +255,7 @@ export function Navbar() {
       </div>
 
       {/* Desktop mega menú */}
-      {openItem && !("href" in openItem && openItem.href) && (
+      {openItem && !isNavCatalogLinkItem(openItem) && (
         <NavMegaMenu
           item={openItem}
           linea={resolveLineaForNav(openItem.label, meta)}
@@ -282,7 +282,7 @@ export function Navbar() {
 
           <nav className="max-h-[70vh] overflow-y-auto px-2 py-2" aria-label="Categorías móvil">
             {NAV_CATALOG_ITEMS.map((item) => {
-              if ("href" in item && item.href) {
+              if (isNavCatalogLinkItem(item)) {
                 return (
                   <Link
                     key={item.id}
