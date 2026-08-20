@@ -35,6 +35,7 @@ export function Navbar() {
 
   const { openCart, itemCount } = useCart();
   const headerRef = useRef<HTMLElement>(null);
+  const closeMenuTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [meta, setMeta] = useState<CatalogFilterMeta | null>(null);
   const [loadingMeta, setLoadingMeta] = useState(true);
@@ -51,9 +52,42 @@ export function Navbar() {
   }, []);
 
   const closeMenus = useCallback(() => {
+    if (closeMenuTimerRef.current) {
+      clearTimeout(closeMenuTimerRef.current);
+      closeMenuTimerRef.current = null;
+    }
     setOpenMenuId(null);
     setMobileOpen(false);
     setMobileExpandedId(null);
+  }, []);
+
+  const openDesktopMenu = useCallback((id: string) => {
+    if (closeMenuTimerRef.current) {
+      clearTimeout(closeMenuTimerRef.current);
+      closeMenuTimerRef.current = null;
+    }
+    setOpenMenuId(id);
+  }, []);
+
+  const scheduleCloseDesktopMenu = useCallback(() => {
+    if (closeMenuTimerRef.current) clearTimeout(closeMenuTimerRef.current);
+    closeMenuTimerRef.current = setTimeout(() => {
+      setOpenMenuId(null);
+      closeMenuTimerRef.current = null;
+    }, 120);
+  }, []);
+
+  const cancelCloseDesktopMenu = useCallback(() => {
+    if (closeMenuTimerRef.current) {
+      clearTimeout(closeMenuTimerRef.current);
+      closeMenuTimerRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (closeMenuTimerRef.current) clearTimeout(closeMenuTimerRef.current);
+    };
   }, []);
 
   useEffect(() => {
@@ -78,10 +112,6 @@ export function Navbar() {
     return () => document.removeEventListener("mousedown", onPointerDown);
   }, [openMenuId]);
 
-  function toggleDesktopMenu(id: string) {
-    setOpenMenuId((prev) => (prev === id ? null : id));
-  }
-
   function handleSearchSubmit(e: React.FormEvent) {
     e.preventDefault();
     const url = shopUrlForSearch(searchQuery);
@@ -92,7 +122,12 @@ export function Navbar() {
   const openItem = NAV_CATALOG_ITEMS.find((item) => item.id === openMenuId);
 
   return (
-    <header ref={headerRef} className="relative w-full overflow-visible border-b border-slate-200 bg-white">
+    <header
+      ref={headerRef}
+      className="relative w-full overflow-visible border-b border-slate-200 bg-white"
+      onMouseEnter={cancelCloseDesktopMenu}
+      onMouseLeave={scheduleCloseDesktopMenu}
+    >
       <div className="relative flex w-full items-center justify-between gap-3 overflow-visible px-4 py-4 sm:gap-4 sm:px-6 lg:px-8">
         {/* Izquierda: hamburger (móvil) + logo (desktop) */}
         <div className="flex min-w-9 shrink-0 items-center justify-start lg:min-w-0">
@@ -169,7 +204,8 @@ export function Navbar() {
               <button
                 key={item.id}
                 type="button"
-                onClick={() => toggleDesktopMenu(item.id)}
+                onMouseEnter={() => openDesktopMenu(item.id)}
+                onFocus={() => openDesktopMenu(item.id)}
                 aria-expanded={isOpen}
                 aria-haspopup="true"
                 className={`relative mx-3 py-2 transition-colors hover:text-slate-600 ${
