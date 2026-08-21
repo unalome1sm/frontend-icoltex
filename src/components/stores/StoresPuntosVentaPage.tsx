@@ -112,6 +112,7 @@ function VideoGuideModal({
 export function StoresPuntosVentaPage() {
   const searchParams = useSearchParams();
   const cityParam = searchParams.get("ciudad") ?? "";
+  const storeParam = searchParams.get("tienda") ?? "";
 
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
@@ -176,20 +177,40 @@ export function StoresPuntosVentaPage() {
     [selectedStore],
   );
 
-  const heroImage = useMemo(() => {
+  const heroImageMobile = useMemo(() => {
     if (!selectedStore?.bannerUrl) return "";
     return getImageDisplayUrl(toDirectImageUrl(selectedStore.bannerUrl));
   }, [selectedStore?.bannerUrl]);
+
+  const heroImageDesktop = useMemo(() => {
+    const url = selectedStore?.bannerDesktopUrl ?? selectedStore?.bannerUrl;
+    if (!url) return "";
+    return getImageDisplayUrl(toDirectImageUrl(url));
+  }, [selectedStore?.bannerDesktopUrl, selectedStore?.bannerUrl]);
 
   useEffect(() => {
     if (filteredStores.length === 0) {
       setSelectedStoreId(null);
       return;
     }
+
+    const storeFromUrl =
+      storeParam &&
+      filteredStores.find(
+        (s) => s.id === storeParam && (!cityParam || s.city === cityParam),
+      );
+
+    if (storeFromUrl) {
+      if (selectedStoreId !== storeFromUrl.id) {
+        setSelectedStoreId(storeFromUrl.id);
+      }
+      return;
+    }
+
     if (!selectedStoreId || !filteredStores.some((s) => s.id === selectedStoreId)) {
       setSelectedStoreId(filteredStores[0].id);
     }
-  }, [filteredStores, selectedStoreId]);
+  }, [filteredStores, selectedStoreId, storeParam, cityParam]);
 
   useEffect(() => {
     setVideoOpen(false);
@@ -270,20 +291,36 @@ export function StoresPuntosVentaPage() {
 
         {selectedStore ? (
           <>
-            {/* Imagen destacada — completa, sin recorte */}
-            {heroImage ? (
+            {/* Imagen destacada — mobile vs desktop */}
+            {heroImageMobile || heroImageDesktop ? (
               <div className="relative mt-8 overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
                 <div className="flex w-full items-center justify-center">
-                  <Image
-                    src={heroImage}
-                    alt={`Punto de venta Icoltex — ${selectedStore.name}, ${cityLabel(selectedStore.city)}`}
-                    width={1600}
-                    height={1600}
-                    className="h-auto w-full max-h-[320px] object-contain sm:max-h-[400px] md:max-h-[460px]"
-                    sizes="(max-width: 1280px) 100vw, 1280px"
-                    priority
-                    unoptimized
-                  />
+                  {heroImageMobile ? (
+                    <Image
+                      src={heroImageMobile}
+                      alt={`Punto de venta Icoltex — ${selectedStore.name}, ${cityLabel(selectedStore.city)}`}
+                      width={900}
+                      height={1200}
+                      className="h-auto w-full max-h-[420px] object-contain md:hidden"
+                      sizes="100vw"
+                      priority
+                      unoptimized
+                    />
+                  ) : null}
+                  {heroImageDesktop ? (
+                    <Image
+                      src={heroImageDesktop}
+                      alt={`Punto de venta Icoltex — ${selectedStore.name}, ${cityLabel(selectedStore.city)}`}
+                      width={1600}
+                      height={900}
+                      className={`h-auto w-full max-h-[460px] object-contain ${
+                        heroImageMobile ? "hidden md:block" : ""
+                      }`}
+                      sizes="(max-width: 1280px) 100vw, 1280px"
+                      priority
+                      unoptimized
+                    />
+                  ) : null}
                 </div>
                 <span className="absolute bottom-4 right-4 rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-red-600 shadow-md">
                   {cityLabel(selectedStore.city)}

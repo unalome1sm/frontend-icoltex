@@ -59,15 +59,27 @@ const SOCIAL_LINKS = [
 function FooterColumn({
   title,
   links,
+  titleHref,
 }: {
   title: string;
   links: { label: string; href: string }[];
+  titleHref?: string;
 }) {
+  const titleClassName =
+    "text-sm font-bold uppercase tracking-wide text-gray-900";
+
   return (
     <div className="flex flex-col gap-4">
-      <h3 className="text-sm font-bold uppercase tracking-wide text-gray-900">
-        {title}
-      </h3>
+      {titleHref ? (
+        <Link
+          href={titleHref}
+          className={`${titleClassName} hover:text-gray-700`}
+        >
+          {title}
+        </Link>
+      ) : (
+        <h3 className={titleClassName}>{title}</h3>
+      )}
       <ul className="flex flex-col gap-2">
         {links.map((item) => (
           <li key={item.label}>
@@ -123,7 +135,11 @@ export function Footer() {
           <FooterColumn title="Ayuda" links={AYUDA_LINKS} />
           <FooterColumn title="Acerca de Icoltex" links={ACERCA_LINKS} />
           <FooterColumn title="Legal" links={LEGAL_LINKS} />
-          <FooterColumn title="Puntos de venta" links={PUNTOS_LINKS} />
+          <FooterColumn
+            title="Puntos de venta"
+            titleHref="/stores"
+            links={PUNTOS_LINKS}
+          />
         </div>
 
         {/* Líneas y copyright */}
