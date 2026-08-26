@@ -20,7 +20,7 @@ export function TopBar() {
 
   return (
     <div
-      className="w-full text-sm text-slate-700"
+      className="w-full text-label text-slate-700"
       style={{ backgroundColor: TOP_BAR_BG }}
     >
       <div className="flex w-full items-center justify-end px-4 py-2 sm:px-6 lg:px-8">

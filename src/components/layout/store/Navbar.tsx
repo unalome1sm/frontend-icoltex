@@ -176,7 +176,7 @@ export function Navbar() {
 
         {/* Desktop: menú de categorías */}
         <nav
-          className="hidden flex-1 items-center justify-center gap-1 text-sm font-medium text-slate-900 lg:flex"
+          className="hidden flex-1 items-center justify-center gap-1 text-label text-slate-900 lg:flex"
           aria-label="Categorías"
         >
           {NAV_CATALOG_ITEMS.map((item) => {
@@ -228,7 +228,7 @@ export function Navbar() {
             variant="desktop"
             className="hidden w-40 sm:w-48 lg:block"
             iconClassName="h-3.5 w-3.5"
-            inputClassName="w-full rounded-full border border-slate-200 bg-slate-100 py-1.5 pl-8 pr-3 text-sm placeholder:text-slate-500 focus:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-300"
+            inputClassName="w-full rounded-full border border-slate-200 bg-slate-100 py-1.5 pl-8 pr-3 text-body-s placeholder:text-slate-500 focus:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-300"
           />
 
           <button
@@ -292,7 +292,7 @@ export function Navbar() {
               variant="mobile"
               className="relative"
               iconClassName="left-3 h-4 w-4"
-              inputClassName="w-full rounded-full border border-slate-200 bg-slate-100 py-2 pl-9 pr-3 text-sm"
+              inputClassName="w-full rounded-full border border-slate-200 bg-slate-100 py-2 pl-9 pr-3 text-body-s"
             />
           </div>
 
@@ -304,7 +304,7 @@ export function Navbar() {
                     key={item.id}
                     href={item.href}
                     onClick={closeMenus}
-                    className="block rounded-md px-3 py-3 text-sm font-medium text-slate-900 hover:bg-slate-50"
+                    className="block rounded-md px-3 py-3 text-label text-slate-900 hover:bg-slate-50"
                   >
                     {item.label}
                   </Link>
@@ -323,7 +323,7 @@ export function Navbar() {
                     onClick={() =>
                       setMobileExpandedId((prev) => (prev === item.id ? null : item.id))
                     }
-                    className={`flex w-full items-center justify-between rounded-md px-3 py-3 text-left text-sm font-medium hover:bg-slate-50 ${
+                    className={`flex w-full items-center justify-between rounded-md px-3 py-3 text-left text-label hover:bg-slate-50 ${
                       isActive ? "text-red-600" : "text-slate-900"
                     }`}
                     aria-expanded={expanded}
@@ -337,21 +337,21 @@ export function Navbar() {
                       <Link
                         href={shopUrlForLinea(linea)}
                         onClick={closeMenus}
-                        className="block py-1.5 text-sm font-semibold text-slate-800 hover:text-red-600"
+                        className="block py-1.5 text-body-s font-semibold text-slate-800 hover:text-red-600"
                       >
                         Ver todo en {item.label}
                       </Link>
                       {loadingMeta ? (
-                        <p className="py-2 text-sm text-slate-500">Cargando…</p>
+                        <p className="py-2 text-body-s text-slate-500">Cargando…</p>
                       ) : navLinks.length === 0 ? (
-                        <p className="py-2 text-sm text-slate-500">Sin filtros disponibles</p>
+                        <p className="py-2 text-body-s text-slate-500">Sin filtros disponibles</p>
                       ) : (
                         navLinks.map((entry) => (
                           <Link
                             key={`${entry.kind}:${entry.label}`}
                             href={navMegaMenuHref(linea, entry)}
                             onClick={closeMenus}
-                            className="block py-1.5 text-sm text-slate-600 hover:text-red-600"
+                            className="block py-1.5 text-body-s text-slate-600 hover:text-red-600"
                           >
                             {entry.label}
                           </Link>

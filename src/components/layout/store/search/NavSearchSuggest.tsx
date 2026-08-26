@@ -137,7 +137,7 @@ export function NavSearchSuggest({
           e.preventDefault();
           navigateTo(item.href);
         }}
-        className={`flex items-start gap-2.5 px-3 py-2 text-left text-sm transition-colors ${
+        className={`flex items-start gap-2.5 px-3 py-2 text-left text-body-s transition-colors ${
           isActive ? "bg-slate-100 text-slate-900" : "text-slate-700 hover:bg-slate-50"
         }`}
       >
@@ -150,7 +150,7 @@ export function NavSearchSuggest({
         <span className="min-w-0 flex-1">
           <span className="block truncate font-medium">{item.label}</span>
           {item.kind === "store" && item.subtitle ? (
-            <span className="block truncate text-xs text-slate-500">{item.subtitle}</span>
+            <span className="block truncate text-caption text-slate-500">{item.subtitle}</span>
           ) : null}
         </span>
       </Link>
@@ -201,7 +201,7 @@ export function NavSearchSuggest({
         >
           {groups.stores.length > 0 ? (
             <div>
-              <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+              <p className="px-3 py-1.5 text-caption font-semibold uppercase tracking-wide text-slate-400">
                 Puntos de venta
               </p>
               {groups.stores.map((item, index) => renderSuggestion(item, index))}
@@ -213,7 +213,7 @@ export function NavSearchSuggest({
               {groups.stores.length > 0 ? (
                 <div className="my-1 border-t border-slate-100" />
               ) : null}
-              <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+              <p className="px-3 py-1.5 text-caption font-semibold uppercase tracking-wide text-slate-400">
                 Productos
               </p>
               {groups.products.map((item, index) =>

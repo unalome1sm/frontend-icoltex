@@ -4,9 +4,10 @@ import { DEFAULT_DESCRIPTION, SITE_NAME, getSiteUrl } from "@/lib/seo";
 import "./globals.css";
 
 const sarabun = Sarabun({
-  weight: "400",
+  weight: ["400", "500", "600", "700"],
   subsets: ["latin", "latin-ext"],
   display: "swap",
+  variable: "--font-sarabun",
 });
 
 export const metadata: Metadata = {
@@ -36,7 +37,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
+    <html lang="es" className={sarabun.variable}>
       <body className={`${sarabun.className} antialiased bg-background text-foreground`}>
         {children}
       </body>

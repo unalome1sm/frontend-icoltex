@@ -66,7 +66,7 @@ function FooterColumn({
   titleHref?: string;
 }) {
   const titleClassName =
-    "text-sm font-bold uppercase tracking-wide text-gray-900";
+    "text-label font-semibold uppercase tracking-wide text-gray-900";
 
   return (
     <div className="flex flex-col gap-4">
@@ -85,7 +85,7 @@ function FooterColumn({
           <li key={item.label}>
             <Link
               href={item.href}
-              className="text-sm text-gray-700 hover:text-gray-900"
+              className="text-body-s text-gray-700 hover:text-gray-900"
             >
               {item.label}
             </Link>
@@ -103,7 +103,7 @@ export function Footer() {
         <div className="grid w-full grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-5">
           {/* Recursos Icoltex + redes */}
           <div className="flex flex-col gap-4">
-            <h3 className="text-sm font-bold uppercase tracking-wide text-gray-900">
+            <h3 className="text-label font-semibold uppercase tracking-wide text-gray-900">
               Recursos Icoltex
             </h3>
             <ul className="flex flex-col gap-2">
@@ -111,7 +111,7 @@ export function Footer() {
                 <li key={item.label}>
                   <Link
                     href={item.href}
-                    className="text-sm text-gray-700 hover:text-gray-900"
+                    className="text-body-s text-gray-700 hover:text-gray-900"
                   >
                     {item.label}
                   </Link>
@@ -145,7 +145,7 @@ export function Footer() {
         {/* Líneas y copyright */}
         <div className="mt-12 w-full space-y-0">
           <div className="border-t border-gray-200" />
-          <p className="py-3 text-center text-xs uppercase tracking-wide text-gray-500">
+          <p className="py-3 text-center text-caption uppercase tracking-wide text-gray-500">
             Copyright © · Todos los derechos reservados.
           </p>
           <div className="border-t border-gray-200" />

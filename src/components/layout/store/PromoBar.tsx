@@ -62,8 +62,7 @@ export function PromoBar() {
             }}
           >
             <span
-              className="inline-flex items-center gap-0.5 text-xs font-normal leading-[100%] tracking-normal text-slate-800"
-              style={{ fontFamily: "Sarabun, sans-serif" }}
+              className="inline-flex items-center gap-0.5 text-caption text-slate-800"
             >
               <span
                 className="inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-slate-600 text-white"
@@ -76,7 +75,7 @@ export function PromoBar() {
             {current.link ? (
               <Link
                 href={current.link.href}
-                className="text-xs text-slate-700 leading-none border-b border-slate-700 hover:border-slate-900 hover:text-slate-900 transition-colors"
+                className="text-caption text-slate-700 border-b border-slate-700 hover:border-slate-900 hover:text-slate-900 transition-colors"
               >
                 {current.link.label}
               </Link>

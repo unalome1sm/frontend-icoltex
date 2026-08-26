@@ -200,13 +200,13 @@ export function BannerCarousel() {
         <div className="relative z-10 flex w-full flex-wrap items-center justify-center gap-3 px-2 pb-1">
           <Link
             href="/shop"
-            className="inline-block rounded-sm bg-red-800 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-red-900"
+            className="inline-block rounded-sm bg-red-800 px-5 py-2.5 text-button text-white transition hover:bg-red-900"
           >
             Ver todos los productos
           </Link>
           <Link
             href="/stores"
-            className="inline-block rounded-sm border border-red-800 bg-white px-5 py-2.5 text-sm font-medium text-red-800 transition hover:bg-red-50"
+            className="inline-block rounded-sm border border-red-800 bg-white px-5 py-2.5 text-button text-red-800 transition hover:bg-red-50"
           >
             Ver tiendas
           </Link>
