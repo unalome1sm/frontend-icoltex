@@ -52,7 +52,7 @@ export function PromoBar() {
       className="w-full"
       style={{ backgroundColor: PROMO_BAR_BG }}
     >
-      <div className="flex w-full flex-col items-center justify-center gap-0 px-4 py-2 sm:px-6 sm:py-2.5 lg:px-8">
+      <div className="flex w-full flex-col items-center justify-center gap-0 px-4 py-1 sm:px-6 sm:py-1.5 lg:px-8">
         <div className="relative w-full overflow-hidden text-center">
           <div
             key={current.id}
@@ -62,21 +62,21 @@ export function PromoBar() {
             }}
           >
             <span
-              className="inline-flex items-center gap-0.5 text-base font-normal leading-[100%] tracking-normal text-slate-800"
+              className="inline-flex items-center gap-0.5 text-xs font-normal leading-[100%] tracking-normal text-slate-800"
               style={{ fontFamily: "Sarabun, sans-serif" }}
             >
               <span
-                className="inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-slate-600 text-white"
+                className="inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-slate-600 text-white"
                 aria-hidden
               >
-                <current.icon className="h-3 w-3" />
+                <current.icon className="h-2.5 w-2.5" />
               </span>
               <span>{current.text}</span>
             </span>
             {current.link ? (
               <Link
                 href={current.link.href}
-                className="text-sm text-slate-700 leading-none border-b border-slate-700 hover:border-slate-900 hover:text-slate-900 transition-colors"
+                className="text-xs text-slate-700 leading-none border-b border-slate-700 hover:border-slate-900 hover:text-slate-900 transition-colors"
               >
                 {current.link.label}
               </Link>

@@ -158,7 +158,7 @@ export function BannerCarousel() {
 
       <div
         key={current.id}
-        className="relative z-[2] flex w-full min-h-[540px] items-end justify-start px-6 pb-8 md:min-h-[720px] md:px-10 md:pb-10"
+        className="relative z-[2] flex w-full min-h-[540px] items-end justify-center px-6 pb-8 md:min-h-[720px] md:px-10 md:pb-10"
         style={{
           animation: showControls
             ? direction === "next"
@@ -197,12 +197,20 @@ export function BannerCarousel() {
           <div className={`absolute inset-0 ${current.bgColor}`} aria-hidden />
         )}
 
-        <Link
-          href="/shop"
-          className="relative z-10 inline-block rounded-sm bg-red-800 px-6 py-3 text-sm font-medium uppercase tracking-wide text-white transition hover:bg-red-900"
-        >
-          Comprar
-        </Link>
+        <div className="relative z-10 flex w-full flex-wrap items-center justify-center gap-3 px-2 pb-1">
+          <Link
+            href="/shop"
+            className="inline-block rounded-sm bg-red-800 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-red-900"
+          >
+            Ver todos los productos
+          </Link>
+          <Link
+            href="/stores"
+            className="inline-block rounded-sm border border-red-800 bg-white px-5 py-2.5 text-sm font-medium text-red-800 transition hover:bg-red-50"
+          >
+            Ver tiendas
+          </Link>
+        </div>
       </div>
     </section>
   );

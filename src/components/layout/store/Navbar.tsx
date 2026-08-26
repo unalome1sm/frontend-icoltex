@@ -2,10 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Menu, ShoppingBag, X } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useAuthSidebar } from "@/contexts/AuthSidebarContext";
 import { NavMegaMenu } from "./NavMegaMenu";
 import { NavSearchSuggest } from "./search";
 import {
@@ -23,7 +25,10 @@ const NAV_LOGO_DESKTOP_SRC = "/icons/LOGOS-02.svg";
 const NAV_LOGO_MOBILE_SRC = "/icons/LOGOS-03.svg";
 
 export function Navbar() {
+  const router = useRouter();
   const pathname = usePathname();
+  const { openAuth } = useAuthSidebar();
+  const { isAuthenticated } = useAuth();
   const [search, setSearch] = useState("");
   useEffect(() => {
     setSearch(typeof window !== "undefined" ? window.location.search : "");
@@ -240,22 +245,29 @@ export function Navbar() {
             )}
           </button>
 
-          <Link
-            href="/"
+          <button
+            type="button"
             className="hidden h-9 shrink-0 items-center overflow-visible lg:flex"
-            aria-label="Icoltex"
-            onClick={closeMenus}
+            aria-label={isAuthenticated ? "Mi cuenta" : "Iniciar sesión"}
+            onClick={() => {
+              closeMenus();
+              if (isAuthenticated) {
+                router.push("/account");
+              } else {
+                openAuth("login");
+              }
+            }}
           >
             <Image
               src={NAV_LOGO_MOBILE_SRC}
-              alt="Icoltex"
+              alt=""
               width={400}
               height={380}
               className="h-5 w-auto object-contain"
               priority
               unoptimized
             />
-          </Link>
+          </button>
         </div>
       </div>
 
