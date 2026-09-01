@@ -125,7 +125,7 @@ export function ShopPageClient() {
       </section>
 
       <div className="flex w-full flex-col lg:flex-row">
-        <div className="hidden lg:block">
+        <div className="hidden lg:block lg:self-start">
           <ShopFilters
             meta={meta}
             filters={filters}
@@ -245,6 +245,7 @@ export function ShopPageClient() {
                 filters={filters}
                 onChange={(next) => {
                   handleFiltersChange(next);
+                  setFiltersOpen(false);
                 }}
                 loadingMeta={loadingMeta}
               />
