@@ -7,6 +7,14 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const TOP_BAR_BG = "#F5F5F5";
 
+function TopBarDivider() {
+  return (
+    <span className="mx-3 text-slate-300" aria-hidden>
+      |
+    </span>
+  );
+}
+
 export function TopBar() {
   const router = useRouter();
   const { openAuth } = useAuthSidebar();
@@ -24,21 +32,21 @@ export function TopBar() {
       style={{ backgroundColor: TOP_BAR_BG }}
     >
       <div className="flex w-full items-center justify-end px-4 py-2 sm:px-6 lg:px-8">
-        <Link href="/contact" className="hover:underline">
+        <Link href="/about" className="hover:underline">
           Ayuda
+        </Link>
+        <TopBarDivider />
+        <Link href="/contact" className="hover:underline">
+          Contacto
         </Link>
 
         {!loading && isAuthenticated ? (
           <>
-            <span className="mx-3 text-slate-300" aria-hidden>
-              |
-            </span>
+            <TopBarDivider />
             <Link href="/account" className="hover:underline">
               Mi cuenta
             </Link>
-            <span className="mx-3 text-slate-300" aria-hidden>
-              |
-            </span>
+            <TopBarDivider />
             <button
               type="button"
               onClick={() => void handleLogout()}
@@ -49,25 +57,13 @@ export function TopBar() {
           </>
         ) : !loading ? (
           <>
-            <span className="mx-3 text-slate-300" aria-hidden>
-              |
-            </span>
+            <TopBarDivider />
             <button
               type="button"
               onClick={() => openAuth("register")}
               className="hover:underline"
             >
               Registrarse
-            </button>
-            <span className="mx-3 text-slate-300" aria-hidden>
-              |
-            </span>
-            <button
-              type="button"
-              onClick={() => openAuth("login")}
-              className="hover:underline"
-            >
-              Iniciar sesión
             </button>
           </>
         ) : null}

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { BannerVideo } from "./BannerVideo";
 import { getImageDisplayUrl, toDirectImageUrl } from "@/lib/products";
 
 type TwoImageSectionProps = {
@@ -22,43 +22,15 @@ function isProbablyVideoUrl(url: string): boolean {
   return /\.(mp4|webm|mov|m4v|ogg)(\?|#|$)/i.test(url);
 }
 
-function PanelVideo({ src }: { src: string }) {
-  const ref = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    const v = ref.current;
-    if (!v) return;
-    v.muted = true;
-    v.defaultMuted = true;
-    const tryPlay = () => void v.play().catch(() => {});
-    tryPlay();
-    v.addEventListener("canplay", tryPlay, { once: true });
-    return () => v.removeEventListener("canplay", tryPlay);
-  }, [src]);
-
-  return (
-    <video
-      ref={ref}
-      src={src}
-      className="h-full w-full object-cover object-center"
-      autoPlay
-      muted
-      loop
-      playsInline
-      preload="metadata"
-      controls={false}
-      disablePictureInPicture
-      aria-hidden
-    />
-  );
-}
-
 function PanelMedia({ src }: { src: string }) {
   if (isProbablyVideoUrl(src)) {
-    return <PanelVideo src={src} />;
+    return <BannerVideo src={src} />;
   }
   return <img src={src} alt="" className="h-full w-full object-cover" />;
 }
+
+const panelCtaClassName =
+  "absolute bottom-4 left-1/2 z-10 inline-flex h-12 -translate-x-1/2 items-center justify-center rounded bg-red-800 px-6 text-button text-white transition hover:bg-red-900 md:left-4 md:translate-x-0";
 
 export function TwoImageSection({ imageLeft, imageRight }: TwoImageSectionProps) {
   const leftSrc = imageLeft ? resolveMediaSrc(imageLeft) : null;
@@ -72,10 +44,7 @@ export function TwoImageSection({ imageLeft, imageRight }: TwoImageSectionProps)
         ) : (
           <div className="h-full w-full bg-slate-800" aria-hidden />
         )}
-        <Link
-          href="/shop"
-          className="absolute bottom-4 left-4 z-10 rounded-sm bg-red-800 px-5 py-2.5 text-sm font-medium uppercase tracking-wide text-white transition hover:bg-red-900"
-        >
+        <Link href="/shop" className={panelCtaClassName}>
           Comprar
         </Link>
       </div>
@@ -90,10 +59,7 @@ export function TwoImageSection({ imageLeft, imageRight }: TwoImageSectionProps)
             aria-hidden
           />
         )}
-        <Link
-          href="/shop"
-          className="absolute bottom-4 left-4 z-10 rounded-sm bg-red-800 px-5 py-2.5 text-sm font-medium uppercase tracking-wide text-white transition hover:bg-red-900"
-        >
+        <Link href="/shop" className={panelCtaClassName}>
           Comprar
         </Link>
       </div>

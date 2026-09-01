@@ -3,9 +3,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { getBannerVideoSources, HOME_BANNER_IMAGE_SLIDES } from "@/config/homeMedia";
 import { getImageDisplayUrl, toDirectImageUrl } from "@/lib/products";
+import { BannerVideo } from "./BannerVideo";
 
 type BannerSlide =
   | { kind: "video"; id: string; src: string }
@@ -14,7 +15,7 @@ type BannerSlide =
 
 const ROTATE_INTERVAL_MS = 8000;
 
-function buildSlides(videoSrcs: string[]): BannerSlide[] {
+function buildSlides(videoSrcs: string[], single: boolean): BannerSlide[] {
   const list: BannerSlide[] = [];
 
   for (let i = 0; i < videoSrcs.length; i++) {
@@ -32,59 +33,25 @@ function buildSlides(videoSrcs: string[]): BannerSlide[] {
 
   if (list.length === 0) {
     list.push({ kind: "color", id: "fallback-1", bgColor: "bg-slate-100" });
-    list.push({ kind: "color", id: "fallback-2", bgColor: "bg-slate-200" });
-    list.push({ kind: "color", id: "fallback-3", bgColor: "bg-slate-100" });
+    if (!single) {
+      list.push({ kind: "color", id: "fallback-2", bgColor: "bg-slate-200" });
+      list.push({ kind: "color", id: "fallback-3", bgColor: "bg-slate-100" });
+    }
   }
 
-  return list;
+  return single ? list.slice(0, 1) : list;
 }
 
-type HeroVideoProps = {
-  src: string;
-  onBroken: () => void;
+type BannerCarouselProps = {
+  /** Un solo clip, sin flechas ni rotación (p. ej. /shop). */
+  single?: boolean;
 };
 
-function BannerHeroVideo({ src, onBroken }: HeroVideoProps) {
-  const ref = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    const tryPlay = () => {
-      el.muted = true;
-      el.defaultMuted = true;
-      void el.play().catch(() => {});
-    };
-
-    tryPlay();
-    el.addEventListener("canplay", tryPlay, { once: true });
-
-    return () => {
-      el.removeEventListener("canplay", tryPlay);
-    };
-  }, [src]);
-
-  return (
-    <video
-      ref={ref}
-      src={src}
-      className="h-full w-full object-cover object-center"
-      autoPlay
-      muted
-      loop
-      playsInline
-      preload="auto"
-      controls={false}
-      disablePictureInPicture
-      onError={onBroken}
-      aria-hidden
-    />
-  );
-}
-
-export function BannerCarousel() {
-  const configuredSources = useMemo(() => getBannerVideoSources(), []);
+export function BannerCarousel({ single = false }: BannerCarouselProps) {
+  const configuredSources = useMemo(() => {
+    const all = getBannerVideoSources();
+    return single ? all.slice(0, 1) : all;
+  }, [single]);
   const [brokenSrcs, setBrokenSrcs] = useState<Set<string>>(() => new Set());
 
   const videoSrcs = useMemo(
@@ -100,7 +67,7 @@ export function BannerCarousel() {
     });
   }, []);
 
-  const slides = useMemo(() => buildSlides(videoSrcs), [videoSrcs]);
+  const slides = useMemo(() => buildSlides(videoSrcs, single), [videoSrcs, single]);
 
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState<"next" | "prev">("next");
@@ -158,7 +125,7 @@ export function BannerCarousel() {
 
       <div
         key={current.id}
-        className="relative z-[2] flex w-full min-h-[540px] items-end justify-center px-6 pb-8 md:min-h-[720px] md:px-10 md:pb-10"
+        className="relative z-[2] flex w-full min-h-[540px] items-end justify-center px-6 pb-16 md:min-h-[720px] md:px-10 md:pb-20"
         style={{
           animation: showControls
             ? direction === "next"
@@ -169,7 +136,7 @@ export function BannerCarousel() {
       >
         {current.kind === "video" && (
           <div className="absolute inset-0 z-0 overflow-hidden bg-black">
-            <BannerHeroVideo src={current.src} onBroken={() => markBroken(current.src)} />
+            <BannerVideo src={current.src} onBroken={() => markBroken(current.src)} />
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20" aria-hidden />
           </div>
         )}
@@ -197,16 +164,16 @@ export function BannerCarousel() {
           <div className={`absolute inset-0 ${current.bgColor}`} aria-hidden />
         )}
 
-        <div className="relative z-10 flex w-full flex-wrap items-center justify-center gap-3 px-2 pb-1">
+        <div className="relative z-10 flex w-full flex-wrap items-center justify-center gap-2.5 md:translate-x-[calc((125px-210px)/2)]">
           <Link
             href="/shop"
-            className="inline-block rounded-sm bg-red-800 px-5 py-2.5 text-button text-white transition hover:bg-red-900"
+            className="inline-flex h-12 w-[210px] items-center justify-center rounded bg-red-800 px-6 text-button text-white transition hover:bg-red-900"
           >
             Ver todos los productos
           </Link>
           <Link
             href="/stores"
-            className="inline-block rounded-sm border border-red-800 bg-white px-5 py-2.5 text-button text-red-800 transition hover:bg-red-50"
+            className="inline-flex h-12 w-[125px] items-center justify-center rounded border border-red-800 bg-white px-6 text-button text-red-800 transition hover:bg-red-50"
           >
             Ver tiendas
           </Link>

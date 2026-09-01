@@ -121,7 +121,7 @@ export function ShopPageClient() {
         className="-mt-8 w-screen max-w-none"
         style={{ marginLeft: "calc(50% - 50vw)", marginRight: "calc(50% - 50vw)" }}
       >
-        <BannerCarousel />
+        <BannerCarousel single />
       </section>
 
       <div className="flex w-full flex-col lg:flex-row">

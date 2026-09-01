@@ -3,6 +3,7 @@
 import { Footer } from "../store/Footer";
 import { InfoSidebar } from "@/components/info/InfoSidebar";
 import { ICOLTEX_INFO_SECTIONS } from "@/components/info/infoNav";
+import { InfoMobileHeader } from "./InfoMobileHeader";
 import { usePathname } from "next/navigation";
 
 function getInfoTitle(pathname: string): string {
@@ -27,6 +28,7 @@ export function InfoLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
+      <InfoMobileHeader />
       <div className="flex flex-1">
         <div className="hidden w-[18.5rem] shrink-0 lg:block">
           <div className="h-full max-h-screen overflow-y-auto">

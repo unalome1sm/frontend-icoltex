@@ -4,7 +4,6 @@ import Link from "next/link";
 import {
   chunkNavMegaMenuLinks,
   navMegaMenuHref,
-  shopUrlForLinea,
   type NavCatalogItem,
   type NavMegaMenuLink,
 } from "@/lib/catalog";
@@ -25,7 +24,6 @@ export function NavMegaMenu({
   onClose,
 }: NavMegaMenuProps) {
   const columns = chunkNavMegaMenuLinks(links);
-  const verTodoHref = shopUrlForLinea(linea);
 
   return (
     <div
@@ -34,16 +32,6 @@ export function NavMegaMenu({
       aria-label={`Menú ${item.label}`}
     >
       <div className="mx-auto w-full max-w-7xl px-6 py-6 lg:px-8">
-        <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
-          <Link
-            href={verTodoHref}
-            onClick={onClose}
-            className="text-sm font-semibold text-slate-900 hover:text-red-600"
-          >
-            Ver todo en {item.label}
-          </Link>
-        </div>
-
         {loading ? (
           <p className="py-4 text-sm text-slate-500">Cargando filtros…</p>
         ) : columns.length === 0 ? (

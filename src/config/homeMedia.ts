@@ -11,7 +11,7 @@ export const HOME_BANNER_CLIP_FILES = [
 ] as const;
 
 function toPublicBannerPath(filename: string): string {
-  return `/media/banner/${encodeURIComponent(filename)}`;
+  return `/media/banner/${encodeURI(filename)}`;
 }
 
 /**

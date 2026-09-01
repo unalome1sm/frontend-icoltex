@@ -17,7 +17,6 @@ import {
   navMegaMenuHref,
   navMegaMenuLinksForLinea,
   resolveLineaForNav,
-  shopUrlForLinea,
 } from "@/lib/catalog";
 import { fetchCatalogFilterMeta, type CatalogFilterMeta } from "@/lib/catalog";
 
@@ -334,13 +333,6 @@ export function Navbar() {
 
                   {expanded && (
                     <div className="space-y-1 px-3 pb-3">
-                      <Link
-                        href={shopUrlForLinea(linea)}
-                        onClick={closeMenus}
-                        className="block py-1.5 text-body-s font-semibold text-slate-800 hover:text-red-600"
-                      >
-                        Ver todo en {item.label}
-                      </Link>
                       {loadingMeta ? (
                         <p className="py-2 text-body-s text-slate-500">Cargando…</p>
                       ) : navLinks.length === 0 ? (

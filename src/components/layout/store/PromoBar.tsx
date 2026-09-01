@@ -52,11 +52,11 @@ export function PromoBar() {
       className="w-full"
       style={{ backgroundColor: PROMO_BAR_BG }}
     >
-      <div className="flex w-full flex-col items-center justify-center gap-0 px-4 py-1 sm:px-6 sm:py-1.5 lg:px-8">
-        <div className="relative w-full overflow-hidden text-center">
+      <div className="w-full px-4 py-1 sm:px-6 sm:py-1.5 lg:px-8">
+        <div className="relative min-h-12 w-full overflow-hidden text-center">
           <div
             key={current.id}
-            className="flex flex-col items-center gap-0 leading-none"
+            className="absolute inset-0 flex flex-col items-center justify-center gap-0 leading-none"
             style={{
               animation: "promo-slide-in 0.4s ease-out forwards",
             }}
