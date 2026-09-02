@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { X, Minus, Plus, ChevronDown } from "lucide-react";
+import { X, Minus, Plus, ChevronDown, Trash2 } from "lucide-react";
 import { getApiUrl } from "@/lib/api";
 import { useCart, type CartItem } from "@/contexts/CartContext";
 import { getImageDisplayUrl, toProductCardData, type ProductCardData } from "@/lib/products";
@@ -18,10 +18,15 @@ type ProductResponse = {
 };
 
 const MEASURE_LABELS: Record<CartItem["measure"], string> = {
-  metro: "m",
+  metro: "metro",
   rollo: "rollo",
-  peso: "kg",
+  peso: "kilo",
 };
+
+function formatCartQuantity(value: number): string {
+  if (Number.isInteger(value)) return String(value);
+  return value.toLocaleString("es-CO", { maximumFractionDigits: 2 });
+}
 
 const MEASURE_OPTIONS: { value: CartItem["measure"]; label: string }[] = [
   { value: "metro", label: "Metro" },
@@ -61,7 +66,17 @@ function CartLineItem({ item, onRemove, onUpdateQuantity }: {
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="font-medium text-slate-900">{item.nombre}</p>
+        <div className="flex items-start justify-between gap-2">
+          <p className="font-medium text-slate-900">{item.nombre}</p>
+          <button
+            type="button"
+            onClick={() => onRemove(item.id)}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-red-600"
+            aria-label="Quitar"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
         {item.color && (
           <p className="text-xs text-slate-500">{item.color}</p>
         )}
@@ -78,8 +93,8 @@ function CartLineItem({ item, onRemove, onUpdateQuantity }: {
             >
               <Minus className="h-3.5 w-3.5" />
             </button>
-            <span className="min-w-[1.5rem] text-center text-sm font-medium">
-              {item.quantity}
+            <span className="min-w-[2rem] px-1 text-center text-sm font-medium text-slate-900">
+              {formatCartQuantity(item.quantity)}
             </span>
             <button
               type="button"
@@ -94,13 +109,6 @@ function CartLineItem({ item, onRemove, onUpdateQuantity }: {
             $ {lineTotal.toLocaleString("es-CO")} COP
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => onRemove(item.id)}
-          className="mt-1 text-xs text-slate-500 underline hover:text-red-600"
-        >
-          Quitar
-        </button>
       </div>
     </div>
   );

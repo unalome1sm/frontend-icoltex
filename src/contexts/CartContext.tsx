@@ -17,7 +17,7 @@ type CartContextValue = {
   items: CartItem[];
   isOpen: boolean;
   isHydrated: boolean;
-  addItem: (item: Omit<CartItem, "id">) => void;
+  addItem: (item: Omit<CartItem, "id">, options?: { open?: boolean }) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
@@ -79,7 +79,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     saveCartToStorage(items);
   }, [items, isHydrated]);
 
-  const addItem = useCallback((item: Omit<CartItem, "id">) => {
+  const addItem = useCallback((item: Omit<CartItem, "id">, options?: { open?: boolean }) => {
     setItems((prev) => {
       const existing = prev.find((i) => sameLine(i, item));
       if (existing) {
@@ -91,7 +91,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       return [...prev, { ...item, id: generateCartItemId() }];
     });
-    setIsOpen(true);
+    if (options?.open !== false) setIsOpen(true);
   }, []);
 
   const removeItem = useCallback((id: string) => {

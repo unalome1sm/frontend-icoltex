@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, X } from "lucide-react";
 import { useCart, type CartItem } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { getApiUrl, getAuthHeaders } from "@/lib/api";
@@ -79,7 +79,7 @@ function AccordionHeader({
 }
 
 export function CheckoutContent() {
-  const { items, subtotal, isHydrated } = useCart();
+  const { items, subtotal, isHydrated, removeItem } = useCart();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
 
   const [stepOpen, setStepOpen] = useState<Step>(1);
@@ -395,13 +395,28 @@ export function CheckoutContent() {
                       <p className="text-sm font-medium text-slate-900">{item.nombre}</p>
                       {item.color && <p className="text-xs text-slate-500">{item.color}</p>}
                       <p className="text-xs text-slate-600">
-                        {item.quantity} {MEASURE_LABELS[item.measure]} · ${" "}
+                        {item.quantity} · ${" "}
                         {item.precioMetro.toLocaleString("es-CO")} / {MEASURE_LABELS[item.measure]}
                       </p>
                       <p className="mt-0.5 text-sm font-semibold text-slate-900">
                         $ {lineTotal.toLocaleString("es-CO")}
                       </p>
+                      <button
+                        type="button"
+                        onClick={() => removeItem(item.id)}
+                        className="mt-1 text-xs text-slate-500 underline hover:text-red-600"
+                      >
+                        Quitar
+                      </button>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => removeItem(item.id)}
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-white hover:text-red-600"
+                      aria-label="Quitar del pedido"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
                   </div>
                 );
               })}

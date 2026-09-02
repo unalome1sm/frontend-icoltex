@@ -64,16 +64,20 @@ export function pickWinningVariantIndex(group: { variant: ColorGroupableVariant;
   return sorted[0].index;
 }
 
+function hasStock(v: ColorGroupableVariant): boolean {
+  return v.stock > 0;
+}
+
 /**
- * One swatch per commercial colorLabel. Hides TIPO A/B/… quality labels.
- * variantIndex points at the winning SKU in the original array.
+ * One swatch per commercial colorLabel with at least one SKU in stock.
+ * Hides TIPO A/B/… quality labels. variantIndex points at the winning in-stock SKU.
  */
 export function buildColorSwatches(variantes: ColorGroupableVariant[]): ColorSwatchOption[] {
   const buckets = new Map<string, { label: string; entries: { variant: ColorGroupableVariant; index: number }[] }>();
 
   variantes.forEach((variant, index) => {
     const label = variant.colorLabel?.trim();
-    if (!label || isTipoQualityLabel(label)) return;
+    if (!label || isTipoQualityLabel(label) || !hasStock(variant)) return;
 
     const key = normalizeColorKey(label);
     let bucket = buckets.get(key);

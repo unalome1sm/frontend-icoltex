@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Check } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Check, Minus, Plus } from "lucide-react";
 import { ProductImageGallery } from "./ProductImageGallery";
 import { ProductAccordion } from "./ProductAccordion";
 import { ProductCard } from "./ProductCard";
@@ -55,6 +56,13 @@ export type ProductVariantOption = {
   unidadMedida?: string;
 };
 
+type ShopMeasure = "metro" | "peso";
+
+type MeasureOption = {
+  id: ShopMeasure;
+  label: string;
+};
+
 type Props = {
   product: ProductDetailData;
   relatedProducts?: ProductCardData[];
@@ -67,15 +75,106 @@ type Props = {
   groupImageUrls?: string[];
 };
 
-const MEASURE_OPTIONS = [
-  { id: "metro", label: "Metro" },
-  { id: "rollo", label: "Rollo" },
-  { id: "peso", label: "Peso" },
-];
+const QUANTITY_MIN = 1;
+const QUANTITY_STEP = 1;
 
 function parseColors(colores?: string): string[] {
   if (!colores?.trim()) return [];
   return colores.split(/[,;]/).map((c) => c.trim()).filter(Boolean);
+}
+
+function isNoUtilizarName(name: string): boolean {
+  return /^NO\s*UTILIZAR\b/i.test(name.trim());
+}
+
+function variantHasPrice(v: ProductVariantOption): boolean {
+  if (v.tienePrecio === false) return false;
+  if (v.tienePrecio === true) return true;
+  return (
+    (v.precioMetro != null && !Number.isNaN(v.precioMetro)) ||
+    (v.precioKilos != null && !Number.isNaN(v.precioKilos))
+  );
+}
+
+function isSellableVariant(v: ProductVariantOption): boolean {
+  if (v.activo === false) return false;
+  if (isNoUtilizarName(v.itemNameCompleto)) return false;
+  return variantHasPrice(v);
+}
+
+function unitToMeasure(unidad?: string): ShopMeasure | null {
+  const u = unidad?.trim().toUpperCase();
+  if (u === "KG") return "peso";
+  if (u === "METRO") return "metro";
+  return null;
+}
+
+function measureToSapUnit(measure: ShopMeasure): "METRO" | "KG" {
+  return measure === "peso" ? "KG" : "METRO";
+}
+
+function colorKey(label: string): string {
+  return label.trim().toLocaleLowerCase("es");
+}
+
+function unitPriceOf(
+  p: Pick<ProductDetailData, "unidadMedida" | "precioMetro" | "precioKilos">,
+): number {
+  const isKg = p.unidadMedida?.toUpperCase() === "KG";
+  if (isKg) return p.precioKilos ?? p.precioMetro ?? 0;
+  return p.precioMetro ?? p.precioKilos ?? 0;
+}
+
+function measureSuffix(measure: ShopMeasure): string {
+  return measure === "peso" ? "kg" : "m";
+}
+
+function clampQuantity(value: number, maxStock: number): number {
+  const min = QUANTITY_MIN;
+  if (!Number.isFinite(value) || value < min) return min;
+  const capped = maxStock > 0 ? Math.min(value, maxStock) : value;
+  return Math.round(capped * 100) / 100;
+}
+
+function findVariantIndexForMeasure(
+  rows: ProductVariantOption[],
+  color: string | null,
+  measure: ShopMeasure,
+): number {
+  const unit = measureToSapUnit(measure);
+  const wantedColor = color ? colorKey(color) : "";
+  const matchesUnit = (v: ProductVariantOption) =>
+    isSellableVariant(v) && v.unidadMedida?.toUpperCase() === unit;
+
+  if (wantedColor) {
+    const sameColor = rows.findIndex(
+      (v) => matchesUnit(v) && colorKey(v.colorLabel) === wantedColor,
+    );
+    if (sameColor >= 0) return sameColor;
+  }
+  return rows.findIndex(matchesUnit);
+}
+
+function measuresFromVariants(rows: ProductVariantOption[]): ShopMeasure[] {
+  const found = new Set<ShopMeasure>();
+  for (const v of rows) {
+    if (!isSellableVariant(v)) continue;
+    const measure = unitToMeasure(v.unidadMedida);
+    if (measure) found.add(measure);
+  }
+  const ordered: ShopMeasure[] = [];
+  if (found.has("metro")) ordered.push("metro");
+  if (found.has("peso")) ordered.push("peso");
+  return ordered;
+}
+
+function measuresFromProduct(p: ProductDetailData): ShopMeasure[] {
+  const fromUnit = unitToMeasure(p.unidadMedida);
+  if (fromUnit) return [fromUnit];
+  const ordered: ShopMeasure[] = [];
+  if (p.precioMetro != null && !Number.isNaN(p.precioMetro)) ordered.push("metro");
+  if (p.precioKilos != null && !Number.isNaN(p.precioKilos)) ordered.push("peso");
+  return ordered.length ? ordered : ["metro"];
 }
 
 function variantToDetail(
@@ -109,7 +208,8 @@ export function ProductDetail({
   groupImageUrls,
 }: Props) {
   const { addItem } = useCart();
-  const [measure, setMeasure] = useState<"metro" | "rollo" | "peso">("metro");
+  const router = useRouter();
+  const [measure, setMeasure] = useState<ShopMeasure>("metro");
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [variantIndex, setVariantIndex] = useState(0);
@@ -124,6 +224,8 @@ export function ProductDetail({
     setVariantIndex(winnerIndex);
     const winner = variantes[winnerIndex];
     setSelectedColor(winner?.colorLabel?.trim() || null);
+    const winnerMeasure = unitToMeasure(winner?.unidadMedida);
+    if (winnerMeasure) setMeasure(winnerMeasure);
   }, [product.id, hasVariantes, variantesGroupId]);
 
   const activeVariant = useMemo(() => {
@@ -151,6 +253,26 @@ export function ProductDetail({
     return product;
   }, [activeVariant, product, groupImageUrls]);
 
+  const measureOptions: MeasureOption[] = useMemo(() => {
+    const fromGroup =
+      hasVariantes && variantes?.length ? measuresFromVariants(variantes) : [];
+    const ids = fromGroup.length ? fromGroup : measuresFromProduct(product);
+    const labels: Record<ShopMeasure, string> = { metro: "Metro", peso: "Peso" };
+    return ids.map((id) => ({ id, label: labels[id] }));
+  }, [hasVariantes, variantes, product]);
+
+  useEffect(() => {
+    if (measureOptions.length === 0) return;
+    if (!measureOptions.some((opt) => opt.id === measure)) {
+      setMeasure(measureOptions[0].id);
+    }
+  }, [measureOptions, measure]);
+
+  useEffect(() => {
+    const fromUnit = unitToMeasure(product.unidadMedida);
+    if (!hasVariantes && fromUnit) setMeasure(fromUnit);
+  }, [hasVariantes, product.id, product.unidadMedida]);
+
   const heading = tituloVitrina ?? displayProduct.nombre;
   const colorSwatches = useMemo(() => {
     if (hasVariantes && variantes?.length) {
@@ -166,17 +288,64 @@ export function ProductDetail({
   const mainColor =
     selectedColor ?? colorSwatches[0]?.colorLabel ?? "Azul marino";
   const images = displayProduct.imageUrls?.length ? displayProduct.imageUrls : [];
+  const unitPrice = unitPriceOf(displayProduct);
+  const stockMax = displayProduct.stock > 0 ? displayProduct.stock : 0;
 
-  function handleAddToCart() {
-    addItem({
+  useEffect(() => {
+    setQuantity((current) => clampQuantity(current, stockMax));
+  }, [stockMax, measure, displayProduct.id]);
+
+  function handleMeasureChange(next: ShopMeasure) {
+    setMeasure(next);
+    if (!hasVariantes || !variantes?.length) return;
+    const nextIndex = findVariantIndexForMeasure(variantes, selectedColor, next);
+    if (nextIndex >= 0) setVariantIndex(nextIndex);
+  }
+
+  function handleColorChange(colorLabel: string, fallbackIndex: number) {
+    setSelectedColor(colorLabel);
+    if (!hasVariantes || !variantes?.length) {
+      setVariantIndex(fallbackIndex);
+      return;
+    }
+    const kept = findVariantIndexForMeasure(variantes, colorLabel, measure);
+    if (kept >= 0) {
+      setVariantIndex(kept);
+      return;
+    }
+    setVariantIndex(fallbackIndex);
+    const fallbackMeasure = unitToMeasure(variantes[fallbackIndex]?.unidadMedida);
+    if (fallbackMeasure) setMeasure(fallbackMeasure);
+  }
+
+  function handleQuantityInput(raw: string) {
+    const parsed = parseFloat(raw.replace(",", "."));
+    setQuantity(clampQuantity(parsed, stockMax));
+  }
+
+  function bumpQuantity(delta: number) {
+    setQuantity((current) => clampQuantity(current + delta, stockMax));
+  }
+
+  function cartLine() {
+    return {
       productId: displayProduct.id,
       nombre: displayProduct.nombre,
       imageUrl: displayProduct.imageUrls?.[0],
-      precioMetro: displayProduct.precioMetro ?? 0,
+      precioMetro: unitPrice,
       quantity,
       measure,
       color: mainColor ?? undefined,
-    });
+    };
+  }
+
+  function handleAddToCart() {
+    addItem(cartLine());
+  }
+
+  function handleBuyNow() {
+    addItem(cartLine(), { open: false });
+    router.push("/checkout");
   }
 
   const breadcrumbItems = [
@@ -253,7 +422,7 @@ export function ProductDetail({
               </p>
             )}
             {displayProduct.stock > 0 && (
-              <span className="inline-flex items-center gap-1 rounded bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
+              <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
                 <Check className="h-3.5 w-3.5" />
                 Stock
               </span>
@@ -269,7 +438,7 @@ export function ProductDetail({
           {/* Uso recomendado */}
           {displayProduct.recomendacionesUsos && (
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded bg-red-600 px-2 py-0.5 text-xs font-medium text-white">
+              <span className="rounded-full bg-brand px-2.5 py-0.5 text-xs font-medium text-white">
                 Uso recomendado
               </span>
               <span className="text-sm text-slate-700">
@@ -280,44 +449,76 @@ export function ProductDetail({
 
           {/* Precio */}
           <p className="text-2xl font-bold text-slate-900">
-            $ {(displayProduct.precioMetro ?? 0).toLocaleString("es-CO")} COL
+            $ {unitPrice.toLocaleString("es-CO")} COL
+            <span className="ml-1 text-base font-medium text-slate-500">
+              / {measureSuffix(measure)}
+            </span>
           </p>
 
           {/* Cantidad y tipo de medida */}
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-slate-800">Cantidad</p>
-            <div className="flex flex-wrap gap-2">
-              {MEASURE_OPTIONS.map((opt) => (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => setMeasure(opt.id as "metro" | "rollo" | "peso")}
-                  className={`rounded border px-4 py-2 text-sm font-medium transition ${
-                    measure === opt.id
-                      ? "border-red-600 bg-red-50 text-red-700"
-                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
+          {measureOptions.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-slate-800">Cantidad</p>
+              <div className="flex flex-wrap gap-2">
+                {measureOptions.map((opt) => {
+                  const selected = measure === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => handleMeasureChange(opt.id)}
+                      className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+                        selected
+                          ? "bg-brand text-white"
+                          : "bg-neutral-100 text-slate-800 hover:bg-neutral-200"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="inline-flex items-center overflow-hidden rounded-lg border border-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => bumpQuantity(-QUANTITY_STEP)}
+                    className="flex h-10 w-9 items-center justify-center text-slate-600 hover:bg-neutral-100"
+                    aria-label="Menos"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </button>
+                  <input
+                    type="number"
+                    min={QUANTITY_MIN}
+                    max={stockMax || undefined}
+                    step={QUANTITY_STEP}
+                    value={quantity}
+                    onChange={(e) => handleQuantityInput(e.target.value)}
+                    aria-label={
+                      measure === "peso"
+                        ? "Cantidad en kilos"
+                        : "Cantidad en metros"
+                    }
+                    className="w-16 bg-white py-2 text-center text-sm font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-brand"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => bumpQuantity(QUANTITY_STEP)}
+                    className="flex h-10 w-9 items-center justify-center bg-brand text-white transition hover:bg-brand/90"
+                    aria-label="Más"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+                {stockMax > 0 && quantity >= stockMax && (
+                  <p className="text-xs text-slate-500">
+                    *Has alcanzado el stock máximo disponible del producto por ahora.
+                  </p>
+                )}
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                min={1}
-                max={displayProduct.stock || 999}
-                value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                className="w-20 rounded border border-slate-200 px-3 py-2 text-sm focus:border-red-600 focus:outline-none focus:ring-1 focus:ring-red-600"
-              />
-              {displayProduct.stock > 0 && quantity >= displayProduct.stock && (
-                <p className="text-xs text-slate-500">
-                  *Has alcanzado el stock máximo disponible del producto por ahora.
-                </p>
-              )}
-            </div>
-          </div>
+          )}
 
           {/* Color */}
           {colorSwatches.length > 0 && (
@@ -335,15 +536,9 @@ export function ProductDetail({
                       selectedColor === swatch.colorLabel ||
                       (!selectedColor && swatch.colorLabel === colorSwatches[0]?.colorLabel)
                     }
-                    onClick={() => {
-                      setSelectedColor(swatch.colorLabel);
-                      setVariantIndex(swatch.variantIndex);
-                    }}
+                    onClick={() => handleColorChange(swatch.colorLabel, swatch.variantIndex)}
                   />
                 ))}
-                <span className="ml-1 flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-400">
-                  +
-                </span>
               </div>
             </div>
           )}
@@ -353,13 +548,14 @@ export function ProductDetail({
             <button
               type="button"
               onClick={handleAddToCart}
-              className="rounded bg-red-600 px-6 py-3 text-sm font-medium text-white transition hover:bg-red-700"
+              className="rounded border border-brand bg-white px-6 py-3 text-sm font-medium text-brand transition hover:bg-brand/5"
             >
               Agregar al carrito
             </button>
             <button
               type="button"
-              className="rounded bg-red-500 px-6 py-3 text-sm font-medium text-white transition hover:bg-red-600"
+              onClick={handleBuyNow}
+              className="rounded bg-brand px-6 py-3 text-sm font-medium text-white transition hover:bg-brand/90"
             >
               Comprar ahora
             </button>
@@ -399,7 +595,7 @@ export function ProductDetail({
                 groupId={variantesGroupId}
                 productName={heading}
                 productImageUrl={images[0]}
-                productPrice={displayProduct.precioMetro ?? 0}
+                productPrice={unitPrice}
               />
             )}
           </div>
