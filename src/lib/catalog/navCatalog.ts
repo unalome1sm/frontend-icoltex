@@ -5,6 +5,7 @@ import {
   usosForLinea,
   prendasForLinea,
 } from "./shopFilters";
+import { NAV_MEGA_MENU_TREE } from "./navMegaMenuTree";
 
 /**
  * Valores canónicos de filtro1 en JSON/SAP.
@@ -164,19 +165,47 @@ export function shopUrlForPrenda(linea: string, prenda: string): string {
   return qs ? `/shop?${qs}` : "/shop";
 }
 
-/** Usos + prendas de una línea, en el orden del mega menú (Figma). */
+function findMetaValue(values: string[], candidate: string): string | undefined {
+  const norm = normalizeNavKey(candidate);
+  return values.find((value) => normalizeNavKey(value) === norm);
+}
+
+function navCatalogIdForLabel(label: string): NavCatalogId | undefined {
+  const item = NAV_CATALOG_ITEMS.find(
+    (entry) => normalizeNavKey(entry.label) === normalizeNavKey(label),
+  );
+  return item?.id;
+}
+
+/**
+ * Usos + prendas curados (árbol Word ∩ filter-meta), orden del Word.
+ * El label emitido es el literal del meta para que los query params filtren bien.
+ */
 export function navMegaMenuLinksForLinea(
   label: string,
   meta: CatalogFilterMeta | null,
 ): NavMegaMenuLink[] {
   if (!meta) return [];
+  const navId = navCatalogIdForLabel(label);
+  if (!navId) return [];
+
+  const tree = NAV_MEGA_MENU_TREE[navId];
   const linea = resolveLineaForNav(label, meta);
   const usos = usosForLinea(meta, linea);
   const prendas = prendasForLinea(meta, linea);
-  return [
-    ...usos.map((entry) => ({ label: entry, kind: "uso" as const })),
-    ...prendas.map((entry) => ({ label: entry, kind: "prenda" as const })),
-  ];
+
+  const links: NavMegaMenuLink[] = [];
+
+  for (const sector of tree.sectores) {
+    const match = findMetaValue(usos, sector);
+    if (match) links.push({ label: match, kind: "uso" });
+  }
+  for (const prenda of tree.prendas) {
+    const match = findMetaValue(prendas, prenda);
+    if (match) links.push({ label: match, kind: "prenda" });
+  }
+
+  return links;
 }
 
 export function navMegaMenuHref(linea: string, link: NavMegaMenuLink): string {
@@ -185,17 +214,19 @@ export function navMegaMenuHref(linea: string, link: NavMegaMenuLink): string {
     : shopUrlForPrenda(linea, link.label);
 }
 
-/** Divide links del mega menú en columnas (máx. 4 × 5 ítems). */
+/** Reparte todos los links en hasta 4 columnas (sin truncar). */
 export function chunkNavMegaMenuLinks(links: NavMegaMenuLink[]): NavMegaMenuLink[][] {
   if (links.length === 0) return [];
 
+  const colCount = Math.min(
+    NAV_MAX_COLUMNS,
+    Math.max(1, Math.ceil(links.length / NAV_ITEMS_PER_COLUMN)),
+  );
+  const perCol = Math.ceil(links.length / colCount);
   const cols: NavMegaMenuLink[][] = [];
-  for (
-    let i = 0;
-    i < links.length && cols.length < NAV_MAX_COLUMNS;
-    i += NAV_ITEMS_PER_COLUMN
-  ) {
-    cols.push(links.slice(i, i + NAV_ITEMS_PER_COLUMN));
+
+  for (let i = 0; i < links.length; i += perCol) {
+    cols.push(links.slice(i, i + perCol));
   }
   return cols;
 }

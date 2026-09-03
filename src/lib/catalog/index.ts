@@ -2,6 +2,7 @@ export * from "./groupedCatalog";
 export * from "./colorSwatches";
 export * from "./variantColorGroups";
 export * from "./navCatalog";
+export * from "./navMegaMenuTree";
 export * from "./navSearchSuggestions";
 export {
   fetchItemCharacteristics,
