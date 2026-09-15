@@ -64,6 +64,9 @@ const nextConfig: NextConfig = {
       {
         pathname: "/media/**",
       },
+      {
+        pathname: "/icons/**",
+      },
     ],
     remotePatterns: [
       {
