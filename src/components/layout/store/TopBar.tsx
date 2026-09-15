@@ -33,11 +33,11 @@ export function TopBar() {
     >
       <div className="flex w-full items-center justify-end px-4 py-2 sm:px-6 lg:px-8">
         <Link href="/about" className="hover:underline">
-          Ayuda
+          Acerca de Icoltex
         </Link>
         <TopBarDivider />
         <Link href="/contact" className="hover:underline">
-          Contacto
+          Ayuda
         </Link>
 
         {!loading && isAuthenticated ? (

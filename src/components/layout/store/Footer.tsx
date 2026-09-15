@@ -101,37 +101,7 @@ export function Footer() {
     <footer className="w-full border-t border-slate-200 bg-white">
       <div className="w-full py-12 pl-8 pr-4 sm:pl-12 sm:pr-6 lg:pl-16 lg:pr-8">
         <div className="grid w-full grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-5">
-          {/* Recursos Icoltex + redes */}
-          <div className="flex flex-col gap-4">
-            <h3 className="text-label font-semibold uppercase tracking-wide text-gray-900">
-              Recursos Icoltex
-            </h3>
-            <ul className="flex flex-col gap-2">
-              {RECURSOS_LINKS.map((item) => (
-                <li key={item.label}>
-                  <Link
-                    href={item.href}
-                    className="text-body-s text-gray-700 hover:text-gray-900"
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            <div className="flex gap-3 pt-1" aria-label="Redes sociales">
-              {SOCIAL_LINKS.map(({ label, href, Icon }) => (
-                <a
-                  key={label}
-                  href={href}
-                  className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-red-600 text-red-600 transition hover:bg-red-600 hover:text-white"
-                  aria-label={label}
-                >
-                  <Icon className="h-4 w-4" strokeWidth={2} />
-                </a>
-              ))}
-            </div>
-          </div>
-
+          <FooterColumn title="Recursos Icoltex" links={RECURSOS_LINKS} />
           <FooterColumn title="Ayuda" links={AYUDA_LINKS} />
           <FooterColumn title="Acerca de Icoltex" links={ACERCA_LINKS} />
           <FooterColumn title="Legal" links={LEGAL_LINKS} />
@@ -140,6 +110,22 @@ export function Footer() {
             titleHref="/stores"
             links={PUNTOS_LINKS}
           />
+        </div>
+
+        <div
+          className="mt-10 flex w-full justify-center gap-3"
+          aria-label="Redes sociales"
+        >
+          {SOCIAL_LINKS.map(({ label, href, Icon }) => (
+            <a
+              key={label}
+              href={href}
+              className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-red-600 text-red-600 transition hover:bg-red-600 hover:text-white"
+              aria-label={label}
+            >
+              <Icon className="h-4 w-4" strokeWidth={2} />
+            </a>
+          ))}
         </div>
 
         {/* Líneas y copyright */}
