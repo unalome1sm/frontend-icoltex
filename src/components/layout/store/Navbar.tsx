@@ -23,6 +23,9 @@ import { fetchCatalogFilterMeta, type CatalogFilterMeta } from "@/lib/catalog";
 
 const NAV_LOGO_DESKTOP_SRC = "/icons/LOGOS-02.svg";
 const NAV_LOGO_MOBILE_SRC = "/icons/LOGOS-03.svg";
+/** Figma: Sarabun 14 / Regular / line-height 100% */
+const NAV_CATEGORY_TYPE =
+  "text-[14px] font-normal leading-none tracking-normal text-slate-900";
 
 export function Navbar() {
   const router = useRouter();
@@ -180,7 +183,7 @@ export function Navbar() {
 
         {/* Desktop: menú de categorías */}
         <nav
-          className="hidden flex-1 items-center justify-center gap-1 text-label text-slate-900 lg:flex"
+          className="hidden flex-1 items-center justify-center gap-1 lg:flex"
           aria-label="Categorías"
         >
           {NAV_CATALOG_ITEMS.map((item) => {
@@ -192,9 +195,7 @@ export function Navbar() {
                 <Link
                   key={item.id}
                   href={item.href}
-                  className={`relative mx-3 py-2 transition-colors hover:text-slate-600 ${
-                    linkActive ? "font-semibold text-slate-900" : "text-slate-900"
-                  }`}
+                  className={`relative mx-3 py-2 transition-colors hover:text-slate-600 ${NAV_CATEGORY_TYPE}`}
                 >
                   {item.label}
                   {linkActive && (
@@ -218,9 +219,7 @@ export function Navbar() {
                 onFocus={() => openDesktopMenu(item.id)}
                 aria-expanded={isOpen}
                 aria-haspopup="true"
-                className={`relative mx-3 py-2 transition-colors hover:text-slate-600 ${
-                  isActive ? "font-semibold text-slate-900" : "text-slate-900"
-                }`}
+                className={`relative mx-3 py-2 transition-colors hover:text-slate-600 ${NAV_CATEGORY_TYPE}`}
               >
                 {item.label}
                 {isActive && (
@@ -319,11 +318,15 @@ export function Navbar() {
                     key={item.id}
                     href={item.href}
                     onClick={closeMenus}
-                    className={`block rounded-md px-3 py-3 text-label hover:bg-slate-50 ${
-                      linkActive ? "font-semibold text-slate-900" : "text-slate-900"
-                    }`}
+                    className={`relative block rounded-md px-3 py-3 hover:bg-slate-50 ${NAV_CATEGORY_TYPE}`}
                   >
                     {item.label}
+                    {linkActive && (
+                      <span
+                        className="absolute bottom-2 left-3 right-3 h-0.5 bg-red-600"
+                        aria-hidden
+                      />
+                    )}
                   </Link>
                 );
               }
@@ -340,8 +343,8 @@ export function Navbar() {
                     onClick={() =>
                       setMobileExpandedId((prev) => (prev === item.id ? null : item.id))
                     }
-                    className={`flex w-full items-center justify-between rounded-md px-3 py-3 text-left text-label hover:bg-slate-50 ${
-                      isActive ? "text-red-600" : "text-slate-900"
+                    className={`relative flex w-full items-center justify-between rounded-md px-3 py-3 text-left hover:bg-slate-50 ${NAV_CATEGORY_TYPE} ${
+                      isActive ? "text-red-600" : ""
                     }`}
                     aria-expanded={expanded}
                   >

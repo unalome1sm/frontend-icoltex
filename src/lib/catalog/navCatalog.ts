@@ -50,7 +50,7 @@ export const NAV_CATALOG_ITEMS = [
   { id: "antifluidos", label: "Antifluidos" },
   { id: "dotacion", label: "Dotación" },
   { id: "moda", label: "Moda" },
-  { id: "hogar", label: "Hogar y Decoración" },
+  { id: "hogar", label: "Hogar y decoración" },
   { id: "publicidad", label: "Publicidad" },
   { id: "deportivo", label: "Deportivo" },
   { id: "outlet", label: "Outlet", href: shopUrlForOutlet() },
