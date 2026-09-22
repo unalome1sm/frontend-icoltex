@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SlidersHorizontal, X } from "lucide-react";
 import { BannerCarousel } from "@/components/home";
@@ -42,6 +42,7 @@ function filtersToQuery(filters: ShopFilterState, page: number) {
 export function ShopPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const catalogRef = useRef<HTMLDivElement>(null);
 
   const [filters, setFilters] = useState<ShopFilterState>(() =>
     shopFiltersFromSearchParams(searchParams),
@@ -115,6 +116,11 @@ export function ShopPageClient() {
 
   const activeCount = shopFiltersActiveCount(filters);
 
+  useEffect(() => {
+    if (activeCount === 0) return;
+    catalogRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [searchParams, activeCount]);
+
   return (
     <div className="space-y-0">
       <section
@@ -124,7 +130,11 @@ export function ShopPageClient() {
         <BannerCarousel single />
       </section>
 
-      <div className="flex w-full flex-col lg:flex-row">
+      <div
+        ref={catalogRef}
+        id="catalogo"
+        className="flex w-full flex-col lg:flex-row"
+      >
         <div className="hidden lg:block lg:self-start">
           <ShopFilters
             meta={meta}
