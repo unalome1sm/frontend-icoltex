@@ -26,6 +26,8 @@ export type ShopFilterState = {
   nombre: string;
   colors: string[];
   inStock: boolean;
+  /** Variantes SAP con outlet = Y */
+  outlet: boolean;
   precioMin: string;
   precioMax: string;
   q: string;
@@ -39,11 +41,18 @@ export const DEFAULT_SHOP_FILTERS: ShopFilterState = {
   nombre: "",
   colors: [],
   inStock: false,
+  outlet: false,
   precioMin: "",
   precioMax: "",
   q: "",
   sort: "relevance",
 };
+
+function isOutletParamActive(value: string | null): boolean {
+  if (!value) return false;
+  const v = value.trim().toLowerCase();
+  return v === "y" || v === "1" || v === "true";
+}
 
 export function shopFiltersToSearchParams(filters: ShopFilterState, page?: number): URLSearchParams {
   const sp = new URLSearchParams();
@@ -53,6 +62,7 @@ export function shopFiltersToSearchParams(filters: ShopFilterState, page?: numbe
   if (filters.nombre.trim()) sp.set("nombre", filters.nombre.trim());
   if (filters.colors.length) sp.set("colores", filters.colors.join(","));
   if (filters.inStock) sp.set("stock", "1");
+  if (filters.outlet) sp.set("outlet", "Y");
   if (filters.precioMin.trim()) sp.set("precioMin", filters.precioMin.trim());
   if (filters.precioMax.trim()) sp.set("precioMax", filters.precioMax.trim());
   if (filters.q.trim()) sp.set("q", filters.q.trim());
@@ -72,6 +82,7 @@ export function shopFiltersFromSearchParams(sp: URLSearchParams): ShopFilterStat
     nombre: sp.get("nombre") ?? "",
     colors: parseList(sp.get("colores")),
     inStock: sp.get("stock") === "1" || sp.get("stock") === "true",
+    outlet: isOutletParamActive(sp.get("outlet")),
     precioMin: sp.get("precioMin") ?? "",
     precioMax: sp.get("precioMax") ?? "",
     q: sp.get("q") ?? "",
@@ -94,6 +105,7 @@ export function shopFiltersActiveCount(filters: ShopFilterState): number {
   if (filters.nombre.trim()) n++;
   if (filters.colors.length) n++;
   if (filters.inStock) n++;
+  if (filters.outlet) n++;
   if (filters.precioMin.trim() || filters.precioMax.trim()) n++;
   if (filters.q.trim()) n++;
   return n;

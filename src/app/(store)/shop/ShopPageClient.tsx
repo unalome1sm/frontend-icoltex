@@ -32,6 +32,7 @@ function filtersToQuery(filters: ShopFilterState, page: number) {
     nombre: filters.nombre.trim() || undefined,
     colors: filters.colors.length ? filters.colors : undefined,
     inStock: filters.inStock || undefined,
+    outlet: filters.outlet || undefined,
     precioMin: precioMin != null && !Number.isNaN(precioMin) ? precioMin : undefined,
     precioMax: precioMax != null && !Number.isNaN(precioMax) ? precioMax : undefined,
     q: filters.q.trim() || undefined,
@@ -253,10 +254,7 @@ export function ShopPageClient() {
               <ShopFilters
                 meta={meta}
                 filters={filters}
-                onChange={(next) => {
-                  handleFiltersChange(next);
-                  setFiltersOpen(false);
-                }}
+                onChange={handleFiltersChange}
                 loadingMeta={loadingMeta}
               />
             </div>

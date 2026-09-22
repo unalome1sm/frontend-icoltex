@@ -25,6 +25,7 @@ export type GroupedProductVariant = {
   recomendacionesCuidados?: string;
   unidadMedida?: string;
   tienePrecio?: boolean;
+  outlet?: boolean;
 };
 
 export type GroupedProductRow = {
@@ -69,6 +70,8 @@ export type GroupedProductsQuery = {
   sort?: CatalogSortOption;
   destacado?: boolean;
   novedad?: boolean;
+  /** Variantes con outlet SAP = Y */
+  outlet?: boolean;
 };
 
 export type GroupedProductsResponse = {
@@ -138,6 +141,7 @@ export async function fetchGroupedProductsPage(
   if (params.sort && params.sort !== "relevance") sp.set("sort", params.sort);
   if (params.destacado) sp.set("destacado", "true");
   if (params.novedad) sp.set("novedad", "true");
+  if (params.outlet) sp.set("outlet", "Y");
   const q = sp.toString();
   const res = await fetch(getApiUrl(`/api/catalog/grouped-products${q ? `?${q}` : ""}`), {
     next: { revalidate: 300 },

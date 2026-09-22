@@ -14,6 +14,7 @@ import {
   NAV_CATALOG_ITEMS,
   isNavCatalogLinkItem,
   isNavItemActive,
+  isNavLinkItemActive,
   navMegaMenuHref,
   navMegaMenuLinksForLinea,
   resolveLineaForNav,
@@ -34,6 +35,10 @@ export function Navbar() {
   }, [pathname]);
   const lineaParam = useMemo(
     () => (search ? new URLSearchParams(search).get("linea") : null),
+    [search],
+  );
+  const outletParam = useMemo(
+    () => (search ? new URLSearchParams(search).get("outlet") : null),
     [search],
   );
 
@@ -180,20 +185,30 @@ export function Navbar() {
         >
           {NAV_CATALOG_ITEMS.map((item) => {
             const isOpen = openMenuId === item.id;
-            const isActive =
-              isOpen || isNavItemActive(item.label, pathname, lineaParam, meta);
 
             if (isNavCatalogLinkItem(item)) {
+              const linkActive = isNavLinkItemActive(item, pathname, outletParam);
               return (
                 <Link
                   key={item.id}
                   href={item.href}
-                  className="mx-3 py-2 text-slate-900 transition-colors hover:text-slate-600"
+                  className={`relative mx-3 py-2 transition-colors hover:text-slate-600 ${
+                    linkActive ? "font-semibold text-slate-900" : "text-slate-900"
+                  }`}
                 >
                   {item.label}
+                  {linkActive && (
+                    <span
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-600"
+                      aria-hidden
+                    />
+                  )}
                 </Link>
               );
             }
+
+            const isActive =
+              isOpen || isNavItemActive(item.label, pathname, lineaParam, meta);
 
             return (
               <button
@@ -298,12 +313,15 @@ export function Navbar() {
           <nav className="max-h-[70vh] overflow-y-auto px-2 py-2" aria-label="Categorías móvil">
             {NAV_CATALOG_ITEMS.map((item) => {
               if (isNavCatalogLinkItem(item)) {
+                const linkActive = isNavLinkItemActive(item, pathname, outletParam);
                 return (
                   <Link
                     key={item.id}
                     href={item.href}
                     onClick={closeMenus}
-                    className="block rounded-md px-3 py-3 text-label text-slate-900 hover:bg-slate-50"
+                    className={`block rounded-md px-3 py-3 text-label hover:bg-slate-50 ${
+                      linkActive ? "font-semibold text-slate-900" : "text-slate-900"
+                    }`}
                   >
                     {item.label}
                   </Link>

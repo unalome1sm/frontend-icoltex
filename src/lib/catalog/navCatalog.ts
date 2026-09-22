@@ -39,6 +39,12 @@ export function isNavCatalogLinkItem(item: NavCatalogItem): item is NavCatalogLi
   return "href" in item;
 }
 
+export function shopUrlForOutlet(): string {
+  const filters = { ...DEFAULT_SHOP_FILTERS, outlet: true };
+  const qs = shopFiltersToSearchParams(filters).toString();
+  return qs ? `/shop?${qs}` : "/shop";
+}
+
 /** Ítems del navbar según Figma (orden fijo). */
 export const NAV_CATALOG_ITEMS = [
   { id: "antifluidos", label: "Antifluidos" },
@@ -47,7 +53,9 @@ export const NAV_CATALOG_ITEMS = [
   { id: "hogar", label: "Hogar y Decoración" },
   { id: "publicidad", label: "Publicidad" },
   { id: "deportivo", label: "Deportivo" },
-] as const satisfies readonly NavCatalogMegaMenuItem[];
+  { id: "outlet", label: "Outlet", href: shopUrlForOutlet() },
+  { id: "tiendas", label: "Tiendas", href: "/stores" },
+] as const satisfies readonly NavCatalogItem[];
 
 /** Mega menú: usos (filtro2) y prendas (filtro3) por línea comercial. */
 export type NavMegaMenuLink = {
@@ -72,9 +80,11 @@ function normalizeNavKey(value: string): string {
 
 function canonicalFiltro1ForNavLabel(label: string): string | undefined {
   const item = NAV_CATALOG_ITEMS.find(
-    (entry) => normalizeNavKey(entry.label) === normalizeNavKey(label),
+    (entry) =>
+      !isNavCatalogLinkItem(entry) &&
+      normalizeNavKey(entry.label) === normalizeNavKey(label),
   );
-  if (!item) return undefined;
+  if (!item || isNavCatalogLinkItem(item)) return undefined;
   return NAV_FILTRO1_BY_ID[item.id];
 }
 
@@ -172,9 +182,12 @@ function findMetaValue(values: string[], candidate: string): string | undefined 
 
 function navCatalogIdForLabel(label: string): NavCatalogId | undefined {
   const item = NAV_CATALOG_ITEMS.find(
-    (entry) => normalizeNavKey(entry.label) === normalizeNavKey(label),
+    (entry) =>
+      !isNavCatalogLinkItem(entry) &&
+      normalizeNavKey(entry.label) === normalizeNavKey(label),
   );
-  return item?.id;
+  if (!item || isNavCatalogLinkItem(item)) return undefined;
+  return item.id;
 }
 
 /**
@@ -269,4 +282,25 @@ export function isNavItemActive(
     normalizeNavKey(lineaParam) === normalizeNavKey(label) ||
     (canonical != null && normalizeNavKey(lineaParam) === normalizeNavKey(canonical))
   );
+}
+
+function isOutletQueryActive(outletParam: string | null): boolean {
+  if (!outletParam) return false;
+  const v = outletParam.trim().toLowerCase();
+  return v === "y" || v === "1" || v === "true";
+}
+
+/** Active state for direct nav links (Outlet, Tiendas). */
+export function isNavLinkItemActive(
+  item: NavCatalogLinkItem,
+  pathname: string,
+  outletParam: string | null,
+): boolean {
+  if (item.id === "outlet") {
+    return pathname === "/shop" && isOutletQueryActive(outletParam);
+  }
+  if (item.id === "tiendas") {
+    return pathname === "/stores" || pathname.startsWith("/stores/");
+  }
+  return pathname === item.href || pathname.startsWith(`${item.href}/`);
 }

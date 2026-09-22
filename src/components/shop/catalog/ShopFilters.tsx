@@ -10,6 +10,8 @@ import {
   type ShopFilterState,
 } from "@/lib/catalog";
 
+const PRICE_DEBOUNCE_MS = 400;
+
 type ShopFiltersProps = {
   meta: CatalogFilterMeta | null;
   filters: ShopFilterState;
@@ -56,7 +58,6 @@ function hasActiveFilters(state: ShopFilterState) {
 
 export function ShopFilters({ meta, filters, onChange, loadingMeta }: ShopFiltersProps) {
   const lineaRadioName = useId();
-  const [draft, setDraft] = useState<ShopFilterState>(filters);
   const [expanded, setExpanded] = useState<Record<SectionId, boolean>>({
     linea: true,
     uso: true,
@@ -66,19 +67,32 @@ export function ShopFilters({ meta, filters, onChange, loadingMeta }: ShopFilter
     stock: true,
   });
   const [colorSearch, setColorSearch] = useState("");
+  const [precioMin, setPrecioMin] = useState(filters.precioMin);
+  const [precioMax, setPrecioMax] = useState(filters.precioMax);
 
   useEffect(() => {
-    setDraft(filters);
-  }, [filters]);
+    setPrecioMin(filters.precioMin);
+    setPrecioMax(filters.precioMax);
+  }, [filters.precioMin, filters.precioMax]);
+
+  useEffect(() => {
+    if (precioMin === filters.precioMin && precioMax === filters.precioMax) return;
+
+    const timer = setTimeout(() => {
+      onChange({ ...filters, precioMin, precioMax });
+    }, PRICE_DEBOUNCE_MS);
+
+    return () => clearTimeout(timer);
+  }, [precioMin, precioMax, filters, onChange]);
 
   const usos = useMemo(
-    () => (meta ? usosForLinea(meta, draft.filtro1) : []),
-    [meta, draft.filtro1],
+    () => (meta ? usosForLinea(meta, filters.filtro1) : []),
+    [meta, filters.filtro1],
   );
 
   const prendas = useMemo(
-    () => (meta ? prendasForLinea(meta, draft.filtro1) : []),
-    [meta, draft.filtro1],
+    () => (meta ? prendasForLinea(meta, filters.filtro1) : []),
+    [meta, filters.filtro1],
   );
 
   const colores = useMemo(() => {
@@ -93,7 +107,7 @@ export function ShopFilters({ meta, filters, onChange, loadingMeta }: ShopFilter
   };
 
   const update = (patch: Partial<ShopFilterState>) => {
-    setDraft((prev) => ({ ...prev, ...patch }));
+    onChange({ ...filters, ...patch });
   };
 
   const toggleInList = (list: string[], value: string, checked: boolean) => {
@@ -101,13 +115,10 @@ export function ShopFilters({ meta, filters, onChange, loadingMeta }: ShopFilter
     return list.filter((item) => item !== value);
   };
 
-  const applyDraft = () => {
-    onChange(draft);
-  };
-
   const clearFilters = () => {
-    const cleared = { ...DEFAULT_SHOP_FILTERS, sort: draft.sort };
-    setDraft(cleared);
+    const cleared = { ...DEFAULT_SHOP_FILTERS, sort: filters.sort };
+    setPrecioMin("");
+    setPrecioMax("");
     onChange(cleared);
   };
 
@@ -115,7 +126,7 @@ export function ShopFilters({ meta, filters, onChange, loadingMeta }: ShopFilter
     <aside className="flex w-full shrink-0 flex-col border-r border-slate-200 bg-white lg:w-[280px]">
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-4">
         <h2 className="text-lg font-semibold text-slate-900">Filtros</h2>
-        {hasActiveFilters(draft) && (
+        {hasActiveFilters(filters) && (
           <button
             type="button"
             onClick={clearFilters}
@@ -152,7 +163,7 @@ export function ShopFilters({ meta, filters, onChange, loadingMeta }: ShopFilter
                   <input
                     type="radio"
                     name={lineaRadioName}
-                    checked={!draft.filtro1}
+                    checked={!filters.filtro1}
                     onChange={() => update({ filtro1: "", filtro2: [], filtro3: [], nombre: "" })}
                     className="h-4 w-4 border-slate-300 text-red-600 focus:ring-red-500"
                   />
@@ -165,14 +176,14 @@ export function ShopFilters({ meta, filters, onChange, loadingMeta }: ShopFilter
                     <input
                       type="radio"
                       name={lineaRadioName}
-                      checked={draft.filtro1 === linea}
+                      checked={filters.filtro1 === linea}
                       onChange={() =>
                         update({
                           filtro1: linea,
-                          filtro2: draft.filtro2.filter((u) =>
+                          filtro2: filters.filtro2.filter((u) =>
                             (meta?.usosByLinea[linea] ?? []).includes(u),
                           ),
-                          filtro3: draft.filtro3.filter((p) =>
+                          filtro3: filters.filtro3.filter((p) =>
                             (meta?.prendasByLinea[linea] ?? []).includes(p),
                           ),
                           nombre: "",
@@ -209,10 +220,10 @@ export function ShopFilters({ meta, filters, onChange, loadingMeta }: ShopFilter
                 usos.map((uso) => (
                   <li key={uso}>
                     <FilterCheckbox
-                      checked={draft.filtro2.includes(uso)}
+                      checked={filters.filtro2.includes(uso)}
                       label={uso}
                       onChange={(checked) =>
-                        update({ filtro2: toggleInList(draft.filtro2, uso, checked) })
+                        update({ filtro2: toggleInList(filters.filtro2, uso, checked) })
                       }
                     />
                   </li>
@@ -243,10 +254,10 @@ export function ShopFilters({ meta, filters, onChange, loadingMeta }: ShopFilter
                 prendas.map((prenda) => (
                   <li key={prenda}>
                     <FilterCheckbox
-                      checked={draft.filtro3.includes(prenda)}
+                      checked={filters.filtro3.includes(prenda)}
                       label={prenda}
                       onChange={(checked) =>
-                        update({ filtro3: toggleInList(draft.filtro3, prenda, checked) })
+                        update({ filtro3: toggleInList(filters.filtro3, prenda, checked) })
                       }
                     />
                   </li>
@@ -282,10 +293,10 @@ export function ShopFilters({ meta, filters, onChange, loadingMeta }: ShopFilter
                 {colores.slice(0, 80).map((color) => (
                   <li key={color}>
                     <FilterCheckbox
-                      checked={draft.colors.includes(color)}
+                      checked={filters.colors.includes(color)}
                       label={color}
                       onChange={(checked) =>
-                        update({ colors: toggleInList(draft.colors, color, checked) })
+                        update({ colors: toggleInList(filters.colors, color, checked) })
                       }
                     />
                   </li>
@@ -320,8 +331,8 @@ export function ShopFilters({ meta, filters, onChange, loadingMeta }: ShopFilter
                 <input
                   type="number"
                   min={0}
-                  value={draft.precioMin}
-                  onChange={(e) => update({ precioMin: e.target.value })}
+                  value={precioMin}
+                  onChange={(e) => setPrecioMin(e.target.value)}
                   placeholder={meta?.precioMin != null ? String(meta.precioMin) : "0"}
                   className="mt-1 w-full rounded-md border border-slate-200 px-2 py-1.5 text-sm"
                 />
@@ -331,8 +342,8 @@ export function ShopFilters({ meta, filters, onChange, loadingMeta }: ShopFilter
                 <input
                   type="number"
                   min={0}
-                  value={draft.precioMax}
-                  onChange={(e) => update({ precioMax: e.target.value })}
+                  value={precioMax}
+                  onChange={(e) => setPrecioMax(e.target.value)}
                   placeholder={meta?.precioMax != null ? String(meta.precioMax) : ""}
                   className="mt-1 w-full rounded-md border border-slate-200 px-2 py-1.5 text-sm"
                 />
@@ -343,22 +354,12 @@ export function ShopFilters({ meta, filters, onChange, loadingMeta }: ShopFilter
 
         <div className="border-b border-slate-100 px-4 py-3">
           <FilterCheckbox
-            checked={draft.inStock}
+            checked={filters.inStock}
             label="Solo con stock disponible"
             onChange={(checked) => update({ inStock: checked })}
           />
         </div>
       </nav>
-
-      <div className="sticky bottom-0 z-10 border-t border-slate-200 bg-white p-4">
-        <button
-          type="button"
-          onClick={applyDraft}
-          className="flex h-11 w-full items-center justify-center rounded bg-red-800 px-4 text-sm font-medium text-white transition hover:bg-red-900"
-        >
-          Aplicar filtros
-        </button>
-      </div>
     </aside>
   );
 }
