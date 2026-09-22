@@ -13,6 +13,9 @@ export const WHATSAPP_CONTACTS: readonly WhatsAppContact[] = [
     phone: "573138718187",
     message: "Hola, quiero información sobre productos Icoltex.",
   },
+  
+   /* Add the support phone number when the business confirms it.
+   */
   {
     id: "support",
     label: "Soporte",
