@@ -277,12 +277,6 @@ export function navMegaMenuSectionsForLinea(
   return sections;
 }
 
-export function navMegaMenuImageForLinea(label: string): string | undefined {
-  const navId = navCatalogIdForLabel(label);
-  if (!navId) return undefined;
-  return NAV_MEGA_MENU_TREE[navId].imageSrc;
-}
-
 export function navMegaMenuHref(linea: string, link: NavMegaMenuLink): string {
   return link.kind === "uso"
     ? shopUrlForUso(linea, link.filterValue)
