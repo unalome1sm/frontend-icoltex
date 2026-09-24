@@ -24,4 +24,6 @@ export {
   categoriasForClase,
   usosForLinea,
   prendasForLinea,
+  previewImageForLinea,
+  previewImageForNavFilter,
 } from "./shopFilters";

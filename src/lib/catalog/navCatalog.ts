@@ -13,7 +13,7 @@ import { NAV_MEGA_MENU_TREE } from "./navMegaMenuTree";
  */
 export const NAV_FILTRO1_BY_ID = {
   antifluidos: "ANTIFLUIDOS",
-  dotacion: "DOTACION",
+  dotacion: "DOTACIÓN",
   moda: "MODA",
   hogar: "HOGAR Y DECORACION",
   publicidad: "PUBLICIDAD",
@@ -57,14 +57,32 @@ export const NAV_CATALOG_ITEMS = [
   { id: "tiendas", label: "Tiendas", href: "/stores" },
 ] as const satisfies readonly NavCatalogItem[];
 
-/** Mega menú: usos (filtro2) y prendas (filtro3) por línea comercial. */
+/** Mega menú: usos (filtro2 / Por sector) y prendas (filtro3 / Por uso). */
 export type NavMegaMenuLink = {
-  label: string;
+  /** Text shown in the mega menu (Figma label). */
+  displayLabel: string;
+  /** Catalog value for shop query params (filter-meta literal). */
+  filterValue: string;
   kind: "uso" | "prenda";
 };
 
-const NAV_ITEMS_PER_COLUMN = 5;
-const NAV_MAX_COLUMNS = 4;
+export type NavMegaMenuSection = {
+  title: "Por sector" | "Por uso";
+  kind: "uso" | "prenda";
+  links: NavMegaMenuLink[];
+};
+
+/** One row in a packed mega-menu column (Figma newspaper flow). */
+export type NavMegaMenuCell =
+  | { kind: "heading"; title: "Por sector" | "Por uso" }
+  | { kind: "link"; link: NavMegaMenuLink };
+
+export type NavMegaMenuColumn = {
+  cells: NavMegaMenuCell[];
+};
+
+/** Rows per column including section headings (Figma ~6). */
+const ROWS_PER_COLUMN = 6;
 
 const ITEMS_PER_COLUMN = 5;
 const MAX_COLUMNS = 6;
@@ -177,7 +195,16 @@ export function shopUrlForPrenda(linea: string, prenda: string): string {
 
 function findMetaValue(values: string[], candidate: string): string | undefined {
   const norm = normalizeNavKey(candidate);
-  return values.find((value) => normalizeNavKey(value) === norm);
+  const exact = values.find((value) => normalizeNavKey(value) === norm);
+  if (exact) return exact;
+
+  // Soft match: candidate is a segment of "A / B" (Figma short labels).
+  return values.find((value) =>
+    value
+      .split(" / ")
+      .map((part) => normalizeNavKey(part.trim()))
+      .includes(norm),
+  );
 }
 
 function navCatalogIdForLabel(label: string): NavCatalogId | undefined {
@@ -191,13 +218,22 @@ function navCatalogIdForLabel(label: string): NavCatalogId | undefined {
 }
 
 /**
- * Usos + prendas curados (árbol Word ∩ filter-meta), orden del Word.
- * El label emitido es el literal del meta para que los query params filtren bien.
+ * Usos + prendas curados (árbol Figma ∩ filter-meta).
+ * `displayLabel` = Figma; `filterValue` = literal del meta para query params.
  */
 export function navMegaMenuLinksForLinea(
   label: string,
   meta: CatalogFilterMeta | null,
 ): NavMegaMenuLink[] {
+  const sections = navMegaMenuSectionsForLinea(label, meta);
+  return sections.flatMap((section) => section.links);
+}
+
+/** Secciones "Por sector" / "Por uso" para el layout Figma. */
+export function navMegaMenuSectionsForLinea(
+  label: string,
+  meta: CatalogFilterMeta | null,
+): NavMegaMenuSection[] {
   if (!meta) return [];
   const navId = navCatalogIdForLabel(label);
   if (!navId) return [];
@@ -207,34 +243,99 @@ export function navMegaMenuLinksForLinea(
   const usos = usosForLinea(meta, linea);
   const prendas = prendasForLinea(meta, linea);
 
-  const links: NavMegaMenuLink[] = [];
-
+  const sectorLinks: NavMegaMenuLink[] = [];
   for (const sector of tree.sectores) {
-    const match = findMetaValue(usos, sector);
-    if (match) links.push({ label: match, kind: "uso" });
-  }
-  for (const prenda of tree.prendas) {
-    const match = findMetaValue(prendas, prenda);
-    if (match) links.push({ label: match, kind: "prenda" });
+    const filterValue = findMetaValue(usos, sector.match);
+    if (filterValue) {
+      sectorLinks.push({
+        displayLabel: sector.display,
+        filterValue,
+        kind: "uso",
+      });
+    }
   }
 
-  return links;
+  const prendaLinks: NavMegaMenuLink[] = [];
+  for (const prenda of tree.prendas) {
+    const filterValue = findMetaValue(prendas, prenda.match);
+    if (filterValue) {
+      prendaLinks.push({
+        displayLabel: prenda.display,
+        filterValue,
+        kind: "prenda",
+      });
+    }
+  }
+
+  const sections: NavMegaMenuSection[] = [];
+  if (sectorLinks.length) {
+    sections.push({ title: "Por sector", kind: "uso", links: sectorLinks });
+  }
+  if (prendaLinks.length) {
+    sections.push({ title: "Por uso", kind: "prenda", links: prendaLinks });
+  }
+  return sections;
+}
+
+export function navMegaMenuImageForLinea(label: string): string | undefined {
+  const navId = navCatalogIdForLabel(label);
+  if (!navId) return undefined;
+  return NAV_MEGA_MENU_TREE[navId].imageSrc;
 }
 
 export function navMegaMenuHref(linea: string, link: NavMegaMenuLink): string {
   return link.kind === "uso"
-    ? shopUrlForUso(linea, link.label)
-    : shopUrlForPrenda(linea, link.label);
+    ? shopUrlForUso(linea, link.filterValue)
+    : shopUrlForPrenda(linea, link.filterValue);
 }
 
-/** Reparte todos los links en hasta 4 columnas (sin truncar). */
+/**
+ * Pack a single Figma stream into columns (~6 rows each).
+ * Headings count as one row so "Por uso" can start mid-column.
+ */
+export function packNavMegaMenuColumns(
+  cells: NavMegaMenuCell[],
+  rowsPerColumn: number = ROWS_PER_COLUMN,
+): NavMegaMenuColumn[] {
+  if (cells.length === 0) return [];
+
+  const columns: NavMegaMenuColumn[] = [];
+  let current: NavMegaMenuCell[] = [];
+
+  for (const cell of cells) {
+    if (current.length >= rowsPerColumn) {
+      columns.push({ cells: current });
+      current = [];
+    }
+    current.push(cell);
+  }
+  if (current.length) columns.push({ cells: current });
+  return columns;
+}
+
+/** Desktop mega menú: newspaper column flow for a nav line. */
+export function navMegaMenuColumnsForLinea(
+  label: string,
+  meta: CatalogFilterMeta | null,
+): NavMegaMenuColumn[] {
+  const sections = navMegaMenuSectionsForLinea(label, meta);
+  const cells: NavMegaMenuCell[] = [];
+
+  for (const section of sections) {
+    cells.push({ kind: "heading", title: section.title });
+    for (const link of section.links) {
+      cells.push({ kind: "link", link });
+    }
+  }
+
+  return packNavMegaMenuColumns(cells);
+}
+
+/** @deprecated Prefer navMegaMenuColumnsForLinea for desktop layout. */
 export function chunkNavMegaMenuLinks(links: NavMegaMenuLink[]): NavMegaMenuLink[][] {
   if (links.length === 0) return [];
 
-  const colCount = Math.min(
-    NAV_MAX_COLUMNS,
-    Math.max(1, Math.ceil(links.length / NAV_ITEMS_PER_COLUMN)),
-  );
+  const colCount = Math.max(1, Math.ceil(links.length / ROWS_PER_COLUMN));
   const perCol = Math.ceil(links.length / colCount);
   const cols: NavMegaMenuLink[][] = [];
 

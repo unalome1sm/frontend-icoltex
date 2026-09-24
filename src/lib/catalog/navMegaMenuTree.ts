@@ -1,144 +1,183 @@
 /**
- * Árbol curado del mega menú (ICOLTEX Árbol de Navegación).
- * Solo ítems del Word que existen en el catálogo (JSON / filter-meta).
- * Orden: sectores (filtro2) → prendas (filtro3).
+ * Árbol curado del mega menú (Figma ∩ filter-meta).
+ * `match` = valor en catálogo (filtro2/filtro3); `display` = texto visible en el menú.
+ * Orden: sectores (filtro2 / "Por sector") → prendas (filtro3 / "Por uso").
  */
-export type NavMegaMenuTreeEntry = {
-  sectores: readonly string[];
-  prendas: readonly string[];
+
+export type NavMegaMenuTreeItem = {
+  /** Label shown in the mega menu (Figma short/long form). */
+  display: string;
+  /** Value matched against filter-meta / used in shop query params. */
+  match: string;
 };
+
+export type NavMegaMenuTreeEntry = {
+  sectores: readonly NavMegaMenuTreeItem[];
+  prendas: readonly NavMegaMenuTreeItem[];
+  /** Optional right-panel image (public path or Drive URL). */
+  imageSrc?: string;
+};
+
+function item(display: string, match: string = display): NavMegaMenuTreeItem {
+  return { display, match };
+}
+
+/** Short display from a long catalog value (part before " / "). */
+function shortItem(match: string): NavMegaMenuTreeItem {
+  const slash = match.indexOf(" / ");
+  return {
+    display: slash >= 0 ? match.slice(0, slash) : match,
+    match,
+  };
+}
 
 export const NAV_MEGA_MENU_TREE = {
   antifluidos: {
     sectores: [
-      "Salud",
-      "Gastronómico",
-      "Belleza",
-      "Educativo",
-      "Veterinario",
-      "Servicio general",
-      "Farmacéutico / Laboratorio",
-      "Odontológico",
-      "Quirúrgico / Clínico",
+      item("Salud"),
+      item("Educativo"),
+      item("Farmacéutico", "Farmaceútico / Laboratorio"),
+      item("Gastronómico"),
+      item("Veterinario"),
+      item("Odontológico"),
+      item("Belleza"),
+      item("Servicio general"),
+      item("Quirúrgico", "Quirúrgico / Clínico"),
     ],
     prendas: [
-      "Batas",
-      "Delantales",
-      "Tapabocas",
-      "Chaquetas / Chalecos",
-      "Pantalones",
-      "Sudaderas",
-      "Pantalonetas",
-      "Cofias",
-      "Bioseguridad",
-      "Polainas",
-      "Pijamas clínicas",
+      item("Batas"),
+      item("Chaquetas", "Chaquetas / Chalecos"),
+      item("Pantalonetas"),
+      item("Polainas"),
+      item("Delantales"),
+      item("Pantalones"),
+      item("Cofias"),
+      item("Pijamas clínicas"),
+      item("Tapabocas"),
+      item("Sudaderas"),
+      item("Bioseguridad"),
     ],
   },
   dotacion: {
     sectores: [
-      "Empresarial / Administrativo",
-      "Colegial",
-      "Seguridad y operativo",
-      "Industrial",
-      "Comercial",
-      "Servicio general",
-      "Gastronómico",
-      "Construcción y obra",
-      "Logística y transporte",
-      "Minero / Petrolero",
-      "Aeronáutico / Aeroportuario",
+      item("Empresarial", "Empresarial / Administrativo"),
+      item("Industrial"),
+      item("Gastronómico"),
+      item("Minero / Petrolero"),
+      item("Colegial"),
+      item("Comercial"),
+      item("Construcción y obra"),
+      item("Aeronáutico / Aeroportuario"),
+      item("Seguridad y operativo"),
+      item("Servicio general"),
+      item("Logística y transporte"),
     ],
     prendas: [
-      "Blusas",
-      "Pantalones y faldas",
-      "Chaquetas / Chalecos",
-      "Overoles (piloto o dos piezas)",
-      "Sastres",
-      "Buzos",
-      "Camisas y Camisetas",
-      "Delantales",
-      "Chalecos reflectivos",
-      "Ropa de alta visibilidad",
-      "Uniformes de carga / bodega",
-      "Overoles de alta resistencia",
+      item("Blusas"),
+      item("Overoles", "Overoles (piloto o dos piezas)"),
+      item("Camisas y Camisetas"),
+      item("Chalecos reflectivos"),
+      item("Overoles de alta resistencia"),
+      item("Pantalones y faldas"),
+      item("Sastres"),
+      item("Delantales"),
+      item("Ropa de alta visibilidad"),
+      item("Chaquetas / Chalecos"),
+      item("Buzos"),
+      item("Cuartos fríos"),
+      item("Uniformes de carga", "Uniformes de carga / bodega"),
     ],
   },
   moda: {
-    sectores: ["Casual", "Informal", "Ejecutiva", "Resort", "Infantil / Bebé"],
+    sectores: [
+      item("Casual"),
+      item("Resort"),
+      item("Informal"),
+      item("Infantil / Bebé"),
+      item("Ejecutiva"),
+    ],
     prendas: [
-      "Chaquetas / Chalecos",
-      "Faldas",
-      "Pantalones",
-      "Blusas",
-      "Vestidos",
-      "Camisas y Camisetas",
-      "Pijamas",
-      "Calzado",
-      "Sastres",
-      "Denim",
-      "Pantalonetas",
-      "Trajes de baño",
-      "Ropa infantil",
+      item("Chaquetas / Chalecos"),
+      item("Blusas"),
+      item("Pijamas"),
+      item("Denim"),
+      item("Ropa infantil"),
+      item("Faldas"),
+      item("Vestidos"),
+      item("Calzado"),
+      item("Pantalonetas"),
+      item("Accesorios textiles"),
+      item("Pantalones"),
+      item("Camisas y Camisetas"),
+      item("Sastres"),
+      item("Trajes de baño"),
     ],
   },
   hogar: {
     sectores: [
-      "Lencería hogar",
-      "Tapicería",
-      "Decoración",
-      "Hotelería y hospitalidad",
-      "Spa / Bienestar",
-      "Restaurante y catering",
+      item("Lencería hogar"),
+      item("Hotelería y hospitalidad"),
+      item("Tapicería"),
+      item("Spa / Bienestar"),
+      item("Decoración"),
+      item("Restaurante y catering"),
     ],
     prendas: [
-      "Sábanas",
-      "Cobijas",
-      "Forros",
-      "Manteles",
-      "Cortinas",
-      "Toallas y textiles de baño",
-      "Ropa de cama hotelera",
-      "Fundas y cojines decorativos",
+      item("Sábanas"),
+      item("Manteles"),
+      item("Ropa de cama hotelera"),
+      item("Cobijas"),
+      item("Cortinas"),
+      item("Individuales y caminos de mesa"),
+      item("Forros"),
+      item("Toallas y textiles de baño"),
+      item("Fundas y cojines decorativos"),
     ],
   },
   publicidad: {
     sectores: [
-      "Evento",
-      "Dotación comercial",
-      "Agencia de publicidad",
-      "Entretenimiento / Producción audiovisual",
+      item("Evento"),
+      item("Entretenimiento"),
+      item("Producción audiovisual"),
+      item("Dotación comercial"),
+      item("ONG y fundación"),
+      item("Agencia de publicidad"),
     ],
     prendas: [
-      "Gorras",
-      "Banderas / banderines",
-      "Totebags",
-      "Disfraces",
-      "Chaquetas / Chalecos",
-      "Camisas y Camisetas",
-      "Mochilas y maletines textiles",
+      item("Gorras"),
+      item("Disfraces"),
+      item("Mangas"),
+      item("Delantales de marca"),
+      item("Banderas / banderines"),
+      item("Chaquetas / Chalecos"),
+      item("Petos / bibs promocionales"),
+      item("Pulseras y accesorios textiles de evento"),
+      item("Totebags"),
+      item("Camisas y Camisetas"),
+      item("Mochilas y maletines textiles"),
     ],
   },
   deportivo: {
     sectores: [
-      "Uniforme deportivo",
-      "Dotación deportiva",
-      "Equipo y escuela deportiva",
-      "Training / Fitness",
-      "Federación y liga oficial",
-      "Marca propia / Private label",
-      "Outdoor / Aventura",
+      item("Uniforme deportivo"),
+      item("Training / Fitness"),
+      item("Outdoor / Aventura"),
+      item("Dotación deportiva"),
+      item("Federación y liga oficial"),
+      item("Equipo y escuela deportiva"),
+      item("Marca propia / Private label"),
     ],
     prendas: [
-      "Hoodies",
-      "Sudaderas",
-      "Conjuntos deportivos",
-      "Camisetas",
-      "Chaquetas",
-      "Pantalonetas",
-      "Vestido de baño",
-      "Ropa de ciclismo",
-      "Trajes de natación / acuáticos",
+      item("Hoodies"),
+      item("Camisetas"),
+      item("Vestido de baño"),
+      item("Uniformes de artes marciales"),
+      item("Sudaderas"),
+      item("Chaquetas"),
+      item("Ropa de ciclismo"),
+      item("Conjuntos deportivos"),
+      item("Pantalonetas"),
+      item("Trajes de natación / acuáticos"),
     ],
   },
 } as const satisfies Record<string, NavMegaMenuTreeEntry>;

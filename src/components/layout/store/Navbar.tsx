@@ -15,8 +15,9 @@ import {
   isNavCatalogLinkItem,
   isNavItemActive,
   isNavLinkItemActive,
+  navMegaMenuColumnsForLinea,
   navMegaMenuHref,
-  navMegaMenuLinksForLinea,
+  navMegaMenuSectionsForLinea,
   resolveLineaForNav,
 } from "@/lib/catalog";
 import { fetchCatalogFilterMeta, type CatalogFilterMeta } from "@/lib/catalog";
@@ -289,7 +290,8 @@ export function Navbar() {
         <NavMegaMenu
           item={openItem}
           linea={resolveLineaForNav(openItem.label, meta)}
-          links={navMegaMenuLinksForLinea(openItem.label, meta)}
+          columns={navMegaMenuColumnsForLinea(openItem.label, meta)}
+          meta={meta}
           loading={loadingMeta}
           onClose={() => setOpenMenuId(null)}
         />
@@ -333,7 +335,7 @@ export function Navbar() {
 
               const expanded = mobileExpandedId === item.id;
               const linea = resolveLineaForNav(item.label, meta);
-              const navLinks = navMegaMenuLinksForLinea(item.label, meta);
+              const sections = navMegaMenuSectionsForLinea(item.label, meta);
               const isActive = isNavItemActive(item.label, pathname, lineaParam, meta);
 
               return (
@@ -353,21 +355,28 @@ export function Navbar() {
                   </button>
 
                   {expanded && (
-                    <div className="space-y-1 px-3 pb-3">
+                    <div className="space-y-3 px-3 pb-3">
                       {loadingMeta ? (
                         <p className="py-2 text-body-s text-slate-500">Cargando…</p>
-                      ) : navLinks.length === 0 ? (
+                      ) : sections.length === 0 ? (
                         <p className="py-2 text-body-s text-slate-500">Sin filtros disponibles</p>
                       ) : (
-                        navLinks.map((entry) => (
-                          <Link
-                            key={`${entry.kind}:${entry.label}`}
-                            href={navMegaMenuHref(linea, entry)}
-                            onClick={closeMenus}
-                            className="block py-1.5 text-body-s text-slate-600 hover:text-red-600"
-                          >
-                            {entry.label}
-                          </Link>
+                        sections.map((section) => (
+                          <div key={section.title}>
+                            <p className="mb-1 text-body-s font-semibold text-slate-900">
+                              {section.title}
+                            </p>
+                            {section.links.map((entry) => (
+                              <Link
+                                key={`${entry.kind}:${entry.filterValue}`}
+                                href={navMegaMenuHref(linea, entry)}
+                                onClick={closeMenus}
+                                className="block py-1.5 text-body-s text-slate-600 hover:text-red-600"
+                              >
+                                {entry.displayLabel}
+                              </Link>
+                            ))}
+                          </div>
                         ))
                       )}
                     </div>

@@ -7,6 +7,12 @@ export type CatalogFilterMeta = {
   usosByLinea: Record<string, string[]>;
   prendasByLinea: Record<string, string[]>;
   productosByLinea: Record<string, string[]>;
+  /** Primera imageUrl de un grupo por línea (mega menú). */
+  previewImageByLinea: Record<string, string>;
+  /** Primera imageUrl por línea + uso (filtro2). */
+  previewImageByUso: Record<string, Record<string, string>>;
+  /** Primera imageUrl por línea + prenda (filtro3). */
+  previewImageByPrenda: Record<string, Record<string, string>>;
   colores: string[];
   precioMin: number | null;
   precioMax: number | null;
@@ -120,6 +126,9 @@ export async function fetchCatalogFilterMeta(): Promise<CatalogFilterMeta> {
     usosByLinea: data.usosByLinea ?? {},
     prendasByLinea: data.prendasByLinea ?? {},
     productosByLinea: data.productosByLinea ?? {},
+    previewImageByLinea: data.previewImageByLinea ?? {},
+    previewImageByUso: data.previewImageByUso ?? {},
+    previewImageByPrenda: data.previewImageByPrenda ?? {},
     colores: data.colores ?? [],
     precioMin: data.precioMin ?? null,
     precioMax: data.precioMax ?? null,
@@ -174,4 +183,60 @@ export function usosForLinea(meta: CatalogFilterMeta, filtro1: string): string[]
 
 export function prendasForLinea(meta: CatalogFilterMeta, filtro1: string): string[] {
   return valuesForLinea(meta.prendasByLinea ?? {}, filtro1);
+}
+
+function normalizeMetaKey(value: string): string {
+  return value
+    .trim()
+    .toLocaleLowerCase("es")
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "");
+}
+
+function findRecordValue(
+  record: Record<string, string> | undefined,
+  key: string,
+): string | undefined {
+  if (!record || !key.trim()) return undefined;
+  if (record[key]) return record[key];
+  const norm = normalizeMetaKey(key);
+  const match = Object.keys(record).find((k) => normalizeMetaKey(k) === norm);
+  return match ? record[match] : undefined;
+}
+
+function findNestedRecord(
+  nested: Record<string, Record<string, string>> | undefined,
+  linea: string,
+): Record<string, string> | undefined {
+  if (!nested || !linea.trim()) return undefined;
+  if (nested[linea]) return nested[linea];
+  const norm = normalizeMetaKey(linea);
+  const match = Object.keys(nested).find((k) => normalizeMetaKey(k) === norm);
+  return match ? nested[match] : undefined;
+}
+
+/** Mega menú: imagen por defecto de la línea comercial. */
+export function previewImageForLinea(
+  meta: CatalogFilterMeta | null,
+  linea: string,
+): string | undefined {
+  if (!meta) return undefined;
+  return findRecordValue(meta.previewImageByLinea, linea);
+}
+
+/** Mega menú: imagen al hover de sector (filtro2) o prenda (filtro3). */
+export function previewImageForNavFilter(
+  meta: CatalogFilterMeta | null,
+  linea: string,
+  kind: "uso" | "prenda",
+  filterValue: string,
+): string | undefined {
+  if (!meta) return undefined;
+  const byFilter =
+    kind === "uso"
+      ? findNestedRecord(meta.previewImageByUso, linea)
+      : findNestedRecord(meta.previewImageByPrenda, linea);
+  return (
+    findRecordValue(byFilter, filterValue) ?? previewImageForLinea(meta, linea)
+  );
 }
