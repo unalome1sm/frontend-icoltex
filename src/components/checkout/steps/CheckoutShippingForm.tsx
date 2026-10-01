@@ -1,5 +1,6 @@
 "use client";
 
+import { DaneAddressFields } from "../address";
 import type { ShippingData } from "../orderSnapshot";
 
 const inputClass =
@@ -27,32 +28,22 @@ export function CheckoutShippingForm({ value, error, onChange, onSubmit, onBack 
         }}
         className="space-y-4"
       >
-        <div className="grid gap-4 sm:grid-cols-2">
+        <label className="flex cursor-pointer items-center gap-2">
           <input
-            type="text"
-            required
-            placeholder="Departamento *"
-            value={value.departamento}
-            onChange={(e) => patch({ departamento: e.target.value })}
-            className={inputClass}
+            type="checkbox"
+            checked={value.mismaFacturacion}
+            onChange={(e) => patch({ mismaFacturacion: e.target.checked })}
+            className="h-4 w-4 accent-red-600"
           />
-          <input
-            type="text"
-            required
-            placeholder="Ciudad *"
-            value={value.ciudad}
-            onChange={(e) => patch({ ciudad: e.target.value })}
-            className={inputClass}
+          <span className="text-sm text-slate-700">Usar la misma dirección de facturación</span>
+        </label>
+        {!value.mismaFacturacion ? (
+          <DaneAddressFields
+            idPrefix="shipping"
+            value={value}
+            onChange={(address) => patch(address)}
           />
-        </div>
-        <input
-          type="text"
-          required
-          placeholder="Dirección *"
-          value={value.direccion}
-          onChange={(e) => patch({ direccion: e.target.value })}
-          className={inputClass}
-        />
+        ) : null}
         <div className="flex flex-wrap gap-4">
           <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700">
             <input
@@ -75,7 +66,7 @@ export function CheckoutShippingForm({ value, error, onChange, onSubmit, onBack 
             Edificio / apartamento
           </label>
         </div>
-        {value.tipoVivienda === "edificio" && (
+        {value.tipoVivienda === "edificio" ? (
           <input
             type="text"
             required
@@ -84,7 +75,7 @@ export function CheckoutShippingForm({ value, error, onChange, onSubmit, onBack 
             onChange={(e) => patch({ apartamento: e.target.value })}
             className={inputClass}
           />
-        )}
+        ) : null}
         <textarea
           rows={3}
           placeholder="Notas de entrega (opcional)"
@@ -92,7 +83,7 @@ export function CheckoutShippingForm({ value, error, onChange, onSubmit, onBack 
           onChange={(e) => patch({ notas: e.target.value })}
           className={inputClass}
         />
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error ? <p className="text-sm text-red-600">{error}</p> : null}
         <div className="flex flex-col gap-2 sm:flex-row">
           <button
             type="button"

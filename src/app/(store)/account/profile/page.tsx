@@ -6,6 +6,7 @@ import Link from 'next/link';
 
 const EMPTY_DEPS: [] = [];
 import { getApiUrl, getAuthHeaders, apiFetch } from '@/lib/api';
+import { FiscalProfileFields } from './FiscalProfileFields';
 
 type ProfileUser = {
   id: string;
@@ -21,6 +22,23 @@ type ProfileUser = {
   direccionOficina?: string;
   pisoOficina?: string;
   numeroOficina?: string;
+  tipoDocumento?: string;
+  numeroDocumento?: string;
+  digitoVerificacion?: string;
+  tipoPersona?: string;
+  regimenTributario?: string;
+  razonSocial?: string;
+  movil?: string;
+  emailCartera?: string;
+  emailFacturacion?: string;
+  direccionFacturacion?: string;
+  ciudadFacturacion?: string;
+  departamentoFacturacion?: string;
+  codigoDaneFacturacion?: string;
+  direccionEntrega?: string;
+  ciudadEntrega?: string;
+  departamentoEntrega?: string;
+  codigoDaneEntrega?: string;
 };
 
 export default function AccountProfilePage() {
@@ -44,6 +62,23 @@ export default function AccountProfilePage() {
     direccionOficina: '',
     pisoOficina: '',
     numeroOficina: '',
+    tipoDocumento: '',
+    numeroDocumento: '',
+    digitoVerificacion: '',
+    tipoPersona: '',
+    regimenTributario: '',
+    razonSocial: '',
+    movil: '',
+    emailCartera: '',
+    emailFacturacion: '',
+    direccionFacturacion: '',
+    ciudadFacturacion: '',
+    departamentoFacturacion: '',
+    codigoDaneFacturacion: '',
+    direccionEntrega: '',
+    ciudadEntrega: '',
+    departamentoEntrega: '',
+    codigoDaneEntrega: '',
   });
 
   useEffect(() => {
@@ -70,6 +105,23 @@ export default function AccountProfilePage() {
             direccionOficina: u.direccionOficina || '',
             pisoOficina: u.pisoOficina || '',
             numeroOficina: u.numeroOficina || '',
+            tipoDocumento: u.tipoDocumento || '',
+            numeroDocumento: u.numeroDocumento || '',
+            digitoVerificacion: u.digitoVerificacion || '',
+            tipoPersona: u.tipoPersona || '',
+            regimenTributario: u.regimenTributario || '',
+            razonSocial: u.razonSocial || '',
+            movil: u.movil || '',
+            emailCartera: u.emailCartera || '',
+            emailFacturacion: u.emailFacturacion || '',
+            direccionFacturacion: u.direccionFacturacion || '',
+            ciudadFacturacion: u.ciudadFacturacion || '',
+            departamentoFacturacion: u.departamentoFacturacion || '',
+            codigoDaneFacturacion: u.codigoDaneFacturacion || '',
+            direccionEntrega: u.direccionEntrega || '',
+            ciudadEntrega: u.ciudadEntrega || '',
+            departamentoEntrega: u.departamentoEntrega || '',
+            codigoDaneEntrega: u.codigoDaneEntrega || '',
           });
           setTieneOficina(!!(u.direccionOficina || u.pisoOficina || u.numeroOficina));
         }
@@ -97,6 +149,23 @@ export default function AccountProfilePage() {
         direccionCasa: form.direccionCasa || undefined,
         apartamento: form.tipoVivienda === 'edificio' ? (form.apartamento || undefined) : undefined,
         tieneOficina: tieneOficina,
+        tipoDocumento: form.tipoDocumento || '',
+        numeroDocumento: form.numeroDocumento || '',
+        digitoVerificacion: form.digitoVerificacion || '',
+        tipoPersona: form.tipoPersona || '',
+        regimenTributario: form.regimenTributario || '',
+        razonSocial: form.razonSocial || '',
+        movil: form.movil || '',
+        emailCartera: form.emailCartera || '',
+        emailFacturacion: form.emailFacturacion || '',
+        direccionFacturacion: form.direccionFacturacion || '',
+        ciudadFacturacion: form.ciudadFacturacion || '',
+        departamentoFacturacion: form.departamentoFacturacion || '',
+        codigoDaneFacturacion: form.codigoDaneFacturacion || '',
+        direccionEntrega: form.direccionEntrega || '',
+        ciudadEntrega: form.ciudadEntrega || '',
+        departamentoEntrega: form.departamentoEntrega || '',
+        codigoDaneEntrega: form.codigoDaneEntrega || '',
       };
       if (tieneOficina) {
         body.direccionOficina = form.direccionOficina || undefined;
@@ -215,6 +284,8 @@ export default function AccountProfilePage() {
             />
           </div>
         </div>
+
+        <FiscalProfileFields value={form} onChange={handleChange} />
 
         {/* Dirección de vivienda */}
         <div className="space-y-4 border-t border-slate-200 pt-6">

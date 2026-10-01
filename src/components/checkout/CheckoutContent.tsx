@@ -12,18 +12,23 @@ import {
   createOrderAndGetWompiCheckout,
   redirectToWompiCheckout,
 } from "@/lib/payments";
-import { CheckoutPersonalForm } from "./steps/CheckoutPersonalForm";
+import { CheckoutIdentityForm } from "./steps/CheckoutIdentityForm";
+import { CheckoutBillingForm } from "./steps/CheckoutBillingForm";
 import { CheckoutShippingForm } from "./steps/CheckoutShippingForm";
 import { CheckoutPaymentStep } from "./steps/CheckoutPaymentStep";
 import {
+  EMPTY_BILLING,
   EMPTY_PAYMENT,
   EMPTY_PERSONAL,
   EMPTY_SHIPPING,
   loadCheckoutDraft,
+  resolveCheckoutSubmission,
   saveCheckoutDraft,
+  validateBilling,
   validatePayment,
   validatePersonal,
   validateShipping,
+  type BillingData,
   type PaymentData,
   type PersonalData,
   type ShippingData,
@@ -44,9 +49,26 @@ type ProfilePrefill = {
   tipoVivienda?: "casa" | "edificio";
   direccionCasa?: string;
   apartamento?: string;
+  tipoDocumento?: string;
+  numeroDocumento?: string;
+  digitoVerificacion?: string;
+  tipoPersona?: string;
+  regimenTributario?: string;
+  razonSocial?: string;
+  movil?: string;
+  emailCartera?: string;
+  emailFacturacion?: string;
+  direccionFacturacion?: string;
+  ciudadFacturacion?: string;
+  departamentoFacturacion?: string;
+  codigoDaneFacturacion?: string;
+  direccionEntrega?: string;
+  ciudadEntrega?: string;
+  departamentoEntrega?: string;
+  codigoDaneEntrega?: string;
 };
 
-type Step = 0 | 1 | 2 | 3;
+type Step = 0 | 1 | 2 | 3 | 4;
 
 function AccordionHeader({
   title,
@@ -86,9 +108,11 @@ export function CheckoutContent() {
   const [promoOpen, setPromoOpen] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [personal, setPersonal] = useState<PersonalData>(EMPTY_PERSONAL);
+  const [billing, setBilling] = useState<BillingData>(EMPTY_BILLING);
   const [shipping, setShipping] = useState<ShippingData>(EMPTY_SHIPPING);
   const [payment, setPayment] = useState<PaymentData>(EMPTY_PAYMENT);
   const [personalError, setPersonalError] = useState<string | null>(null);
+  const [billingError, setBillingError] = useState<string | null>(null);
   const [shippingError, setShippingError] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -99,7 +123,16 @@ export function CheckoutContent() {
     const draft = loadCheckoutDraft();
     if (draft) {
       setPersonal({ ...EMPTY_PERSONAL, ...draft.personal });
-      setShipping({ ...EMPTY_SHIPPING, ...draft.shipping });
+      setBilling({ ...EMPTY_BILLING, ...(draft.billing ?? {}) });
+      const nextShipping = { ...EMPTY_SHIPPING, ...draft.shipping };
+      if (
+        draft.shipping &&
+        draft.shipping.mismaFacturacion === undefined &&
+        draft.shipping.direccion?.trim()
+      ) {
+        nextShipping.mismaFacturacion = false;
+      }
+      setShipping(nextShipping);
       setPayment({ ...EMPTY_PAYMENT, ...draft.payment });
     }
     setDraftReady(true);
@@ -132,19 +165,44 @@ export function CheckoutContent() {
           const data = (await res.json()) as { user?: ProfilePrefill };
           const u = data.user;
           if (u && !hasDraftPersonal) {
+            const email = u.email || user.email || "";
+            const movil = u.movil || u.telefono || "";
+            const telefono = u.telefono || movil;
+            const billingAddress = {
+              departamento: u.departamentoFacturacion || "",
+              ciudad: u.ciudadFacturacion || "",
+              codigoDane: u.codigoDaneFacturacion || "",
+              direccion: u.direccionFacturacion || u.direccionCasa || "",
+            };
+            const hasDelivery = Boolean(u.direccionEntrega || u.departamentoEntrega || u.codigoDaneEntrega);
             setPersonal((prev) => ({
               ...prev,
-              email: u.email || prev.email || user.email || "",
+              email,
               nombre: u.nombre || prev.nombre || user.nombre || "",
               apellidos: u.apellidos || prev.apellidos,
-              numeroDocumento: u.cedula || prev.numeroDocumento,
-              telefono: u.telefono || prev.telefono,
-              tipoDocumento: prev.tipoDocumento || (u.cedula ? "cc" : ""),
+              tipoDocumento: u.tipoDocumento || prev.tipoDocumento || (u.cedula ? "13" : ""),
+              numeroDocumento: u.numeroDocumento || u.cedula || prev.numeroDocumento,
+              digitoVerificacion: u.digitoVerificacion || prev.digitoVerificacion,
+              tipoPersona: u.tipoPersona || prev.tipoPersona,
+              regimenTributario: u.regimenTributario || prev.regimenTributario,
+              razonSocial: u.razonSocial || prev.razonSocial,
+              movil: movil || prev.movil,
+              telefono: telefono || prev.telefono,
+              telefonoIgualMovil: !telefono || telefono === movil,
+              emailCartera: u.emailCartera || "",
+              emailCarteraIgual: !u.emailCartera || u.emailCartera === email,
+              emailFacturacion: u.emailFacturacion || "",
+              emailFacturacionIgual: !u.emailFacturacion || u.emailFacturacion === email,
             }));
+            setBilling(billingAddress);
             setShipping((prev) => ({
               ...prev,
+              mismaFacturacion: !hasDelivery,
+              departamento: hasDelivery ? u.departamentoEntrega || "" : prev.departamento,
+              ciudad: hasDelivery ? u.ciudadEntrega || "" : prev.ciudad,
+              codigoDane: hasDelivery ? u.codigoDaneEntrega || "" : prev.codigoDane,
+              direccion: hasDelivery ? u.direccionEntrega || "" : prev.direccion,
               tipoVivienda: u.tipoVivienda === "edificio" ? "edificio" : prev.tipoVivienda,
-              direccion: u.direccionCasa || prev.direccion,
               apartamento: u.apartamento || prev.apartamento,
             }));
           }
@@ -161,8 +219,8 @@ export function CheckoutContent() {
 
   useEffect(() => {
     if (!draftReady) return;
-    saveCheckoutDraft({ personal, shipping, payment });
-  }, [personal, shipping, payment, draftReady]);
+    saveCheckoutDraft({ personal, billing, shipping, payment });
+  }, [personal, billing, shipping, payment, draftReady]);
 
   const handlePersonalSubmit = useCallback(() => {
     const err = validatePersonal(personal);
@@ -170,17 +228,25 @@ export function CheckoutContent() {
     if (!err) setStepOpen(2);
   }, [personal]);
 
+  const handleBillingSubmit = useCallback(() => {
+    const err = validateBilling(billing);
+    setBillingError(err);
+    if (!err) setStepOpen(3);
+  }, [billing]);
+
   const handleShippingSubmit = useCallback(() => {
     const err = validateShipping(shipping);
     setShippingError(err);
-    if (!err) setStepOpen(3);
+    if (!err) setStepOpen(4);
   }, [shipping]);
 
   const handleConfirm = useCallback(async () => {
     const pErr = validatePersonal(personal);
+    const bErr = validateBilling(billing);
     const sErr = validateShipping(shipping);
     const payErr = validatePayment(payment);
     setPersonalError(pErr);
+    setBillingError(bErr);
     setShippingError(sErr);
     setPaymentError(payErr);
 
@@ -188,8 +254,12 @@ export function CheckoutContent() {
       setStepOpen(1);
       return;
     }
-    if (sErr) {
+    if (bErr) {
       setStepOpen(2);
+      return;
+    }
+    if (sErr) {
+      setStepOpen(3);
       return;
     }
     if (payErr || items.length === 0) return;
@@ -197,9 +267,11 @@ export function CheckoutContent() {
     setSubmitting(true);
     setPaymentError(null);
     try {
+      const resolved = resolveCheckoutSubmission(personal, billing, shipping);
       const { checkout } = await createOrderAndGetWompiCheckout({
-        customer: personal,
-        shipping,
+        customer: resolved.customer,
+        billing: resolved.billing,
+        shipping: resolved.shipping,
         items: items.map((item) => ({
           productId: item.productId,
           nombre: item.nombre,
@@ -218,7 +290,7 @@ export function CheckoutContent() {
       );
       setSubmitting(false);
     }
-  }, [personal, shipping, payment, items]);
+  }, [personal, billing, shipping, payment, items]);
 
   if (!isHydrated) {
     return (
@@ -258,12 +330,12 @@ export function CheckoutContent() {
         <div className="min-w-0 flex-1 space-y-3 md:flex-[1.5]">
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             <AccordionHeader
-              title="1. Datos personales"
+              title="1. Identificación y contacto"
               open={stepOpen === 1}
               onToggle={() => setStepOpen((s) => (s === 1 ? 0 : 1))}
             />
             {stepOpen === 1 && (
-              <CheckoutPersonalForm
+              <CheckoutIdentityForm
                 value={personal}
                 error={personalError}
                 onChange={setPersonal}
@@ -274,17 +346,17 @@ export function CheckoutContent() {
 
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             <AccordionHeader
-              title="2. Envío"
+              title="2. Facturación"
               open={stepOpen === 2}
               muted={stepOpen !== 2}
               onToggle={() => setStepOpen((s) => (s === 2 ? 0 : 2))}
             />
             {stepOpen === 2 && (
-              <CheckoutShippingForm
-                value={shipping}
-                error={shippingError}
-                onChange={setShipping}
-                onSubmit={handleShippingSubmit}
+              <CheckoutBillingForm
+                value={billing}
+                error={billingError}
+                onChange={setBilling}
+                onSubmit={handleBillingSubmit}
                 onBack={() => setStepOpen(1)}
               />
             )}
@@ -292,12 +364,30 @@ export function CheckoutContent() {
 
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             <AccordionHeader
-              title="3. Pago"
+              title="3. Entrega"
               open={stepOpen === 3}
               muted={stepOpen !== 3}
               onToggle={() => setStepOpen((s) => (s === 3 ? 0 : 3))}
             />
             {stepOpen === 3 && (
+              <CheckoutShippingForm
+                value={shipping}
+                error={shippingError}
+                onChange={setShipping}
+                onSubmit={handleShippingSubmit}
+                onBack={() => setStepOpen(2)}
+              />
+            )}
+          </div>
+
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <AccordionHeader
+              title="4. Pago"
+              open={stepOpen === 4}
+              muted={stepOpen !== 4}
+              onToggle={() => setStepOpen((s) => (s === 4 ? 0 : 4))}
+            />
+            {stepOpen === 4 && (
               <CheckoutPaymentStep
                 error={paymentError}
                 submitting={submitting}
@@ -307,7 +397,7 @@ export function CheckoutContent() {
                   setPayment((prev) => ({ ...prev, acceptTerms, method: "wompi" }))
                 }
                 onSubmit={() => void handleConfirm()}
-                onBack={() => setStepOpen(2)}
+                onBack={() => setStepOpen(3)}
               />
             )}
           </div>

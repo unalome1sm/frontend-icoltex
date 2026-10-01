@@ -19,6 +19,13 @@ export type WompiCheckoutResponse = {
   };
 };
 
+export type CheckoutAddressPayload = {
+  departamento: string;
+  ciudad: string;
+  direccion: string;
+  codigoDane: string;
+};
+
 export type CreateOrderPayload = {
   customer: {
     email: string;
@@ -26,13 +33,18 @@ export type CreateOrderPayload = {
     apellidos: string;
     tipoDocumento: string;
     numeroDocumento: string;
+    digitoVerificacion?: string;
+    tipoPersona: string;
+    regimenTributario: string;
+    razonSocial: string;
     telefono: string;
+    movil: string;
+    emailCartera: string;
+    emailFacturacion: string;
     recibirNovedades: boolean;
   };
-  shipping: {
-    departamento: string;
-    ciudad: string;
-    direccion: string;
+  billing: CheckoutAddressPayload;
+  shipping: CheckoutAddressPayload & {
     tipoVivienda: "casa" | "edificio";
     apartamento?: string;
     notas?: string;
@@ -65,6 +77,7 @@ export type OrderStatusResponse = {
     amountInCents: number;
     total: number;
     customer: CreateOrderPayload["customer"];
+    billing?: CreateOrderPayload["billing"];
     shipping: CreateOrderPayload["shipping"];
     items: Array<{
       productId: string;
