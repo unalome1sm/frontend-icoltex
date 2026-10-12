@@ -15,7 +15,6 @@ import {
   isNavCatalogLinkItem,
   isNavItemActive,
   isNavLinkItemActive,
-  navMegaMenuColumnsForLinea,
   navMegaMenuHref,
   navMegaMenuSectionsForLinea,
   resolveLineaForNav,
@@ -290,7 +289,7 @@ export function Navbar() {
         <NavMegaMenu
           item={openItem}
           linea={resolveLineaForNav(openItem.label, meta)}
-          columns={navMegaMenuColumnsForLinea(openItem.label, meta)}
+          sections={navMegaMenuSectionsForLinea(openItem.label, meta)}
           meta={meta}
           loading={loadingMeta}
           onClose={() => setOpenMenuId(null)}

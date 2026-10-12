@@ -177,6 +177,7 @@ export function groupedRowToCardData(row: GroupedProductRow): ProductCardData {
     colores: colores || undefined,
     imageUrls: imageUrls.length ? imageUrls : undefined,
     isNew: row.esNovedad === true,
+    isOutlet: row.variantes.some((v) => v.outlet === true),
   };
 }
 

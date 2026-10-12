@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Props = {
   images: string[];
@@ -9,6 +9,12 @@ type Props = {
 
 export function ProductImageGallery({ images, alt }: Props) {
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const imageKey = images.join("\0");
+
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [imageKey]);
+
   const mainImage = images[selectedIndex] ?? images[0];
 
   return (

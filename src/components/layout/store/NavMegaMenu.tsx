@@ -9,15 +9,15 @@ import {
   previewImageForNavFilter,
   type CatalogFilterMeta,
   type NavCatalogItem,
-  type NavMegaMenuColumn,
   type NavMegaMenuLink,
+  type NavMegaMenuSection,
 } from "@/lib/catalog";
 import { getImageDisplayUrl, toDirectImageUrl } from "@/lib/products";
 
 type NavMegaMenuProps = {
   item: NavCatalogItem;
   linea: string;
-  columns: NavMegaMenuColumn[];
+  sections: NavMegaMenuSection[];
   meta: CatalogFilterMeta | null;
   loading?: boolean;
   onClose: () => void;
@@ -31,7 +31,7 @@ function resolveMenuImageSrc(src: string): string {
 export function NavMegaMenu({
   item,
   linea,
-  columns,
+  sections,
   meta,
   loading,
   onClose,
@@ -50,7 +50,7 @@ export function NavMegaMenu({
     setPreviewUrl(next ?? linePreview);
   }
 
-  function handleColumnsLeave() {
+  function handleSectionsLeave() {
     setPreviewUrl(linePreview);
   }
 
@@ -64,45 +64,32 @@ export function NavMegaMenu({
         <div className="min-w-0 flex-1">
           {loading ? (
             <p className="py-4 text-sm text-slate-500">Cargando filtros…</p>
-          ) : columns.length === 0 ? (
+          ) : sections.length === 0 ? (
             <p className="py-4 text-sm text-slate-500">
               No hay filtros disponibles para {item.label}.
             </p>
           ) : (
-            <div
-              className="flex items-start gap-x-8 lg:gap-x-10"
-              onMouseLeave={handleColumnsLeave}
-            >
-              {columns.map((column, colIndex) => (
-                <ul
-                  key={`col-${colIndex}`}
-                  className="min-w-0 flex-1 space-y-2.5"
-                >
-                  {column.cells.map((cell, cellIndex) => {
-                    if (cell.kind === "heading") {
-                      return (
-                        <li
-                          key={`h-${cell.title}-${cellIndex}`}
-                          className="text-sm font-semibold text-slate-900"
-                        >
-                          {cell.title}
-                        </li>
-                      );
-                    }
-                    return (
-                      <li key={`${cell.link.kind}:${cell.link.filterValue}:${cellIndex}`}>
+            <div className="space-y-6" onMouseLeave={handleSectionsLeave}>
+              {sections.map((section) => (
+                <div key={section.title}>
+                  <p className="mb-3 text-sm font-semibold text-slate-900">
+                    {section.title}
+                  </p>
+                  <ul className="grid grid-cols-5 gap-x-8 gap-y-2.5">
+                    {section.links.map((link) => (
+                      <li key={`${link.kind}:${link.filterValue}`}>
                         <Link
-                          href={navMegaMenuHref(linea, cell.link)}
+                          href={navMegaMenuHref(linea, link)}
                           onClick={onClose}
-                          onMouseEnter={() => handleLinkEnter(cell.link)}
+                          onMouseEnter={() => handleLinkEnter(link)}
                           className="text-sm text-slate-600 transition-colors hover:text-red-600"
                         >
-                          {cell.link.displayLabel}
+                          {link.displayLabel}
                         </Link>
                       </li>
-                    );
-                  })}
-                </ul>
+                    ))}
+                  </ul>
+                </div>
               ))}
             </div>
           )}

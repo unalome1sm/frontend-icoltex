@@ -11,6 +11,8 @@ export type ProductCardData = {
   colores?: string;
   imageUrls?: string[];
   isNew?: boolean;
+  /** Algún color de la vitrina tiene outlet SAP = Y */
+  isOutlet?: boolean;
   /** Si se define, el enlace del producto usa esta ruta (ej. catálogo agrupado por groupId). */
   href?: string;
 };
@@ -47,6 +49,11 @@ export function ProductCard({ product, variant = "default" }: Props) {
           <div className="flex h-full w-full items-center justify-center text-slate-400">
             Sin imagen
           </div>
+        )}
+        {product.isOutlet && (
+          <span className="pointer-events-none absolute left-3 top-0 z-10 bg-red-600 px-2 pb-3 pt-1.5 text-[11px] font-semibold text-white shadow-md [clip-path:polygon(0_0,100%_0,100%_100%,50%_78%,0_100%)]">
+            Outlet
+          </span>
         )}
         {product.isNew && !isRelated && (
           <span className="absolute bottom-2 left-2 rounded bg-red-600 px-2 py-0.5 text-xs font-medium text-white">
